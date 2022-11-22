@@ -153,7 +153,7 @@ jar.enabled = false
 
 subprojects {
     apply plugin: 'java-library'
-    apply plugin: 'checkstyle'
+    // apply plugin: 'checkstyle'
 
     group = sbeGroup
     version = sbeVersion
@@ -164,7 +164,7 @@ subprojects {
         }
     }
 
-    checkstyle.toolVersion = "${checkstyleVersion}"
+    // checkstyle.toolVersion = "${checkstyleVersion}"
 
     tasks.withType(Sign) {
         onlyIf {
@@ -205,20 +205,20 @@ subprojects {
         }
     }
 
-    test {
-        useJUnitPlatform()
+    // test {
+    //     useJUnitPlatform()
 
-        testLogging {
-            for (def level : LogLevel.values())
-            {
-                def testLogging = get(level)
-                testLogging.exceptionFormat = 'full'
-                testLogging.events = ["FAILED", "STANDARD_OUT", "STANDARD_ERROR"]
-            }
-        }
+    //     testLogging {
+    //         for (def level : LogLevel.values())
+    //         {
+    //             def testLogging = get(level)
+    //             testLogging.exceptionFormat = 'full'
+    //             testLogging.events = ["FAILED", "STANDARD_OUT", "STANDARD_ERROR"]
+    //         }
+    //     }
 
-        javaLauncher.set(toolchainLauncher)
-    }
+    //     javaLauncher.set(toolchainLauncher)
+    // }
 }
 
 def validationXsdPath = project(':sbe-tool').projectDir.toString() + '/src/main/resources/fpl/sbe.xsd'
@@ -239,6 +239,8 @@ project(':sbe-tool') {
         testImplementation "org.mockito:mockito-core:${mockitoVersion}"
         testImplementation "org.junit.jupiter:junit-jupiter-params:${junitVersion}"
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
+        implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.14.0'
+        implementation 'com.github.spullara.mustache.java:compiler:0.9.10'
     }
 
     def generatedDir = 'build/generated-src'
@@ -253,24 +255,24 @@ project(':sbe-tool') {
         }
     }
 
-    compileGeneratedJava {
-        dependsOn 'generateTestCodecs'
-        classpath += sourceSets.main.runtimeClasspath
-    }
+    // compileGeneratedJava {
+    //     dependsOn 'generateTestCodecs'
+    //     classpath += sourceSets.main.runtimeClasspath
+    // }
 
-    compileTestJava.dependsOn compileGeneratedJava
+    // compileTestJava.dependsOn compileGeneratedJava
 
-    task generateTestCodecs(dependsOn: 'compileJava', type: JavaExec) {
-        mainClass.set('uk.co.real_logic.sbe.SbeTool')
-        classpath = sourceSets.main.runtimeClasspath
-        systemProperties(
-            'sbe.output.dir': generatedDir,
-            'sbe.target.language': 'Java',
-            'sbe.validation.stop.on.error': 'true',
-            'sbe.validation.xsd': validationXsdPath)
-        args = ['src/test/resources/json-printer-test-schema.xml',
-                'src/test/resources/composite-elements-schema.xml']
-    }
+    // task generateTestCodecs(dependsOn: 'compileJava', type: JavaExec) {
+    //     mainClass.set('uk.co.real_logic.sbe.SbeTool')
+    //     classpath = sourceSets.main.runtimeClasspath
+    //     systemProperties(
+    //         'sbe.output.dir': generatedDir,
+    //         'sbe.target.language': 'Java',
+    //         'sbe.validation.stop.on.error': 'true',
+    //         'sbe.validation.xsd': validationXsdPath)
+    //     args = ['src/test/resources/json-printer-test-schema.xml',
+    //             'src/test/resources/composite-elements-schema.xml']
+    // }
 
     jar {
         manifest.attributes(
@@ -293,7 +295,7 @@ project(':sbe-tool') {
 
     java {
         withSourcesJar()
-        withJavadocJar()
+        // withJavadocJar()
     }
 
     publishing {
@@ -327,6 +329,7 @@ project(':sbe-all') {
 
     dependencies {
         implementation project(':sbe-tool')
+        implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.14.0'
     }
 
     shadowJar {
@@ -386,158 +389,160 @@ project(':sbe-all') {
     }
 }
 
-project(':sbe-samples') {
-    apply plugin: 'maven-publish'
-    apply plugin: 'signing'
+// project(':sbe-samples') {
+//     apply plugin: 'maven-publish'
+//     apply plugin: 'signing'
 
-    dependencies {
-        api project(':sbe-tool')
-        implementation files('build/classes/java/generated')
-    }
+//     dependencies {
+//         api project(':sbe-tool')
+//         implementation files('build/classes/java/generated')
+//         implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.14.0'
+//     }
 
-    def generatedDir = 'build/generated-src'
-    sourceSets {
-        generated {
-            java.srcDir generatedDir
-            compileClasspath += project(':sbe-all').sourceSets.main.runtimeClasspath
-        }
-    }
+//     def generatedDir = 'build/generated-src'
+//     sourceSets {
+//         generated {
+//             java.srcDir generatedDir
+//             compileClasspath += project(':sbe-all').sourceSets.main.runtimeClasspath
+//         }
+//     }
 
-    compileJava.dependsOn 'compileGeneratedJava'
-    compileGeneratedJava.dependsOn 'generateCodecs'
+//     compileJava.dependsOn 'compileGeneratedJava'
+//     compileGeneratedJava.dependsOn 'generateCodecs'
 
-    task generateCodecs(type: JavaExec) {
-        mainClass.set('uk.co.real_logic.sbe.SbeTool')
-        classpath = project(':sbe-all').sourceSets.main.runtimeClasspath
-        systemProperties(
-            'sbe.output.dir': generatedDir,
-            'sbe.target.language': 'Java',
-            'sbe.java.generate.interfaces': 'true',
-            'sbe.validation.stop.on.error': 'true',
-            'sbe.decode.unknown.enum.values': 'true',
-            'sbe.xinclude.aware': 'true',
-            'sbe.validation.xsd': validationXsdPath)
-        args = ['src/main/resources/example-schema.xml', 'src/main/resources/example-extension-schema.xml']
-    }
+//     task generateCodecs(type: JavaExec) {
+//         mainClass.set('uk.co.real_logic.sbe.SbeTool')
+//         classpath = project(':sbe-all').sourceSets.main.runtimeClasspath
+//         systemProperties(
+//             'sbe.output.dir': generatedDir,
+//             'sbe.target.language': 'Java',
+//             'sbe.java.generate.interfaces': 'true',
+//             'sbe.validation.stop.on.error': 'true',
+//             'sbe.decode.unknown.enum.values': 'true',
+//             'sbe.xinclude.aware': 'true',
+//             'sbe.validation.xsd': validationXsdPath)
+//         args = ['src/main/resources/example-schema.xml', 'src/main/resources/example-extension-schema.xml']
+//     }
 
-    task runExampleUsingGeneratedStub(dependsOn: 'compileJava', type: JavaExec) {
-        mainClass.set('uk.co.real_logic.sbe.examples.ExampleUsingGeneratedStub')
-        classpath = sourceSets.main.runtimeClasspath
-        systemProperties System.getProperties()
-    }
+//     task runExampleUsingGeneratedStub(dependsOn: 'compileJava', type: JavaExec) {
+//         mainClass.set('uk.co.real_logic.sbe.examples.ExampleUsingGeneratedStub')
+//         classpath = sourceSets.main.runtimeClasspath
+//         systemProperties System.getProperties()
+//     }
 
-    task runExampleUsingGeneratedStubExtension(dependsOn: 'compileJava', type: JavaExec) {
-        mainClass.set('uk.co.real_logic.sbe.examples.ExampleUsingGeneratedStubExtension')
-        classpath = sourceSets.main.runtimeClasspath
-        systemProperties System.getProperties()
-    }
+//     task runExampleUsingGeneratedStubExtension(dependsOn: 'compileJava', type: JavaExec) {
+//         mainClass.set('uk.co.real_logic.sbe.examples.ExampleUsingGeneratedStubExtension')
+//         classpath = sourceSets.main.runtimeClasspath
+//         systemProperties System.getProperties()
+//     }
 
-    task runOtfExample(dependsOn: 'compileJava', type: JavaExec) {
-        mainClass.set('uk.co.real_logic.sbe.examples.OtfExample')
-        classpath = sourceSets.main.runtimeClasspath
-        workingDir = 'src/main/resources'
-    }
+//     task runOtfExample(dependsOn: 'compileJava', type: JavaExec) {
+//         mainClass.set('uk.co.real_logic.sbe.examples.OtfExample')
+//         classpath = sourceSets.main.runtimeClasspath
+//         workingDir = 'src/main/resources'
+//     }
 
-    task runJavaExamples {
-        dependsOn 'runExampleUsingGeneratedStub', 'runExampleUsingGeneratedStubExtension', 'runOtfExample'
-    }
+//     task runJavaExamples {
+//         dependsOn 'runExampleUsingGeneratedStub', 'runExampleUsingGeneratedStubExtension', 'runOtfExample'
+//     }
 
-    jar {
-        from sourceSets.generated.output
+//     jar {
+//         from sourceSets.generated.output
 
-        manifest.attributes(
-            'Main-Class': 'uk.co.real_logic.sbe.SbeTool',
-            'Specification-Title': 'Simple Binary Encoding',
-            'Specification-Version': '1.0',
-            'Implementation-Title': 'SBE',
-            'Implementation-Version': sbeVersion,
-            'Implementation-Vendor': 'Real Logic Limited',
-            'Automatic-Module-Name': 'uk.co.real_logic.sbe.samples'
-        )
-    }
+//         manifest.attributes(
+//             'Main-Class': 'uk.co.real_logic.sbe.SbeTool',
+//             'Specification-Title': 'Simple Binary Encoding',
+//             'Specification-Version': '1.0',
+//             'Implementation-Title': 'SBE',
+//             'Implementation-Version': sbeVersion,
+//             'Implementation-Vendor': 'Real Logic Limited',
+//             'Automatic-Module-Name': 'uk.co.real_logic.sbe.samples'
+//         )
+//     }
 
-    task sourcesJar(type: Jar) {
-        archiveClassifier.set('sources')
-        from sourceSets.main.allSource
-        from sourceSets.generated.allSource
-    }
+//     task sourcesJar(type: Jar) {
+//         archiveClassifier.set('sources')
+//         from sourceSets.main.allSource
+//         from sourceSets.generated.allSource
+//     }
 
-    javadoc {
-        source += sourceSets.generated.allJava
-        source += project(':sbe-tool').sourceSets.main.allJava
-    }
+//     javadoc {
+//         source += sourceSets.generated.allJava
+//         source += project(':sbe-tool').sourceSets.main.allJava
+//     }
 
-    java {
-        withSourcesJar()
-        withJavadocJar()
-    }
+//     java {
+//         withSourcesJar()
+//         withJavadocJar()
+//     }
 
-    publishing {
-        publications {
-            sbeSamples(MavenPublication) {
-                from components.java
-                pom(projectPom)
-            }
-        }
+//     publishing {
+//         publications {
+//             sbeSamples(MavenPublication) {
+//                 from components.java
+//                 pom(projectPom)
+//             }
+//         }
 
-        repositories {
-            maven {
-                url(!isReleaseVersion ? snapshotsRepoUrl : releasesRepoUrl)
-                credentials {
-                    username = ossrhUsername
-                    password = ossrhPassword
-                }
-            }
-        }
-    }
+//         repositories {
+//             maven {
+//                 url(!isReleaseVersion ? snapshotsRepoUrl : releasesRepoUrl)
+//                 credentials {
+//                     username = ossrhUsername
+//                     password = ossrhPassword
+//                 }
+//             }
+//         }
+//     }
 
-    signing {
-        sign publishing.publications.sbeSamples
-    }
-}
+//     signing {
+//         sign publishing.publications.sbeSamples
+//     }
+// }
 
-project(':sbe-benchmarks') {
-    apply plugin: 'com.github.johnrengelman.shadow'
+// project(':sbe-benchmarks') {
+//     apply plugin: 'com.github.johnrengelman.shadow'
 
-    dependencies {
-        implementation "org.openjdk.jmh:jmh-core:${jmhVersion}"
-        annotationProcessor "org.openjdk.jmh:jmh-generator-annprocess:${jmhVersion}"
-        implementation project(':sbe-tool')
-        implementation files('build/classes/java/generated')
-    }
+//     dependencies {
+//         implementation "org.openjdk.jmh:jmh-core:${jmhVersion}"
+//         annotationProcessor "org.openjdk.jmh:jmh-generator-annprocess:${jmhVersion}"
+//         implementation project(':sbe-tool')
+//         implementation files('build/classes/java/generated')
+//         implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.14.0'
+//     }
 
-    sourceSets {
-        generated {
-            java.srcDir 'build/generated-src'
-            compileClasspath += project(':sbe-all').sourceSets.main.runtimeClasspath
-        }
-    }
+//     sourceSets {
+//         generated {
+//             java.srcDir 'build/generated-src'
+//             compileClasspath += project(':sbe-all').sourceSets.main.runtimeClasspath
+//         }
+//     }
 
-    compileGeneratedJava.dependsOn 'generateCodecs'
-    compileJava.dependsOn 'compileGeneratedJava'
+//     compileGeneratedJava.dependsOn 'generateCodecs'
+//     compileJava.dependsOn 'compileGeneratedJava'
 
-    task generateCodecs(type: JavaExec) {
-        mainClass.set('uk.co.real_logic.sbe.SbeTool')
-        classpath = project(':sbe-all').sourceSets.main.runtimeClasspath
-        systemProperties(
-            'sbe.output.dir': 'build/generated-src',
-            'sbe.target.language': 'Java',
-            'sbe.validation.stop.on.error': 'true',
-            'sbe.validation.xsd': validationXsdPath,
-            'sbe.java.encoding.buffer.type': 'org.agrona.concurrent.UnsafeBuffer',
-            'sbe.java.decoding.buffer.type': 'org.agrona.concurrent.UnsafeBuffer')
-        args = ['src/main/resources/car.xml', 'src/main/resources/fix-message-samples.xml']
-    }
+//     task generateCodecs(type: JavaExec) {
+//         mainClass.set('uk.co.real_logic.sbe.SbeTool')
+//         classpath = project(':sbe-all').sourceSets.main.runtimeClasspath
+//         systemProperties(
+//             'sbe.output.dir': 'build/generated-src',
+//             'sbe.target.language': 'Java',
+//             'sbe.validation.stop.on.error': 'true',
+//             'sbe.validation.xsd': validationXsdPath,
+//             'sbe.java.encoding.buffer.type': 'org.agrona.concurrent.UnsafeBuffer',
+//             'sbe.java.decoding.buffer.type': 'org.agrona.concurrent.UnsafeBuffer')
+//         args = ['src/main/resources/car.xml', 'src/main/resources/fix-message-samples.xml']
+//     }
 
-    shadowJar {
-        archiveFileName = 'sbe-benchmarks.jar'
-        archiveClassifier.set('benchmarks')
-        manifest.attributes('Main-Class': 'org.openjdk.jmh.Main')
-    }
+//     shadowJar {
+//         archiveFileName = 'sbe-benchmarks.jar'
+//         archiveClassifier.set('benchmarks')
+//         manifest.attributes('Main-Class': 'org.openjdk.jmh.Main')
+//     }
 
-    jar.finalizedBy shadowJar
-    javadoc.enabled = false
-}
+//     jar.finalizedBy shadowJar
+//     javadoc.enabled = false
+// }
 
 /*
  * Rust codec targets used for testing
@@ -571,21 +576,21 @@ task generateRustTestCodecs(type: JavaExec) {
     ]
 }
 
-task generateCarExampleDataFile(type: JavaExec) {
-    mainClass.set('uk.co.real_logic.sbe.examples.ExampleUsingGeneratedStub')
-    classpath = project(':sbe-samples').sourceSets.main.runtimeClasspath
-    systemProperties('sbe.encoding.filename': 'rust/car_example_baseline_data.sbe')
-    args = []
-    standardOutput = new ByteArrayOutputStream()
-}
+// task generateCarExampleDataFile(type: JavaExec) {
+//     mainClass.set('uk.co.real_logic.sbe.examples.ExampleUsingGeneratedStub')
+//     classpath = project(':sbe-samples').sourceSets.main.runtimeClasspath
+//     systemProperties('sbe.encoding.filename': 'rust/car_example_baseline_data.sbe')
+//     args = []
+//     standardOutput = new ByteArrayOutputStream()
+// }
 
-task generateCarExampleExtensionDataFile(type: JavaExec) {
-    mainClass.set('uk.co.real_logic.sbe.examples.ExampleUsingGeneratedStubExtension')
-    classpath = project(':sbe-samples').sourceSets.main.runtimeClasspath
-    systemProperties('sbe.encoding.filename': 'rust/car_example_extension_data.sbe')
-    args = []
-    standardOutput = new ByteArrayOutputStream()
-}
+// task generateCarExampleExtensionDataFile(type: JavaExec) {
+//     mainClass.set('uk.co.real_logic.sbe.examples.ExampleUsingGeneratedStubExtension')
+//     classpath = project(':sbe-samples').sourceSets.main.runtimeClasspath
+//     systemProperties('sbe.encoding.filename': 'rust/car_example_extension_data.sbe')
+//     args = []
+//     standardOutput = new ByteArrayOutputStream()
+// }
 
 task generateRustCodecs {
     description = 'Generate rust test codecs'
