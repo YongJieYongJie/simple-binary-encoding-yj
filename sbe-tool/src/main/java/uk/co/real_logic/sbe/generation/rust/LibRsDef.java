@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.stream.Stream;
 
+import uk.co.real_logic.sbe.generation.rust.templatemodels.LibRs;
+
 import static java.nio.ByteOrder.LITTLE_ENDIAN;
 import static uk.co.real_logic.sbe.generation.rust.RustGenerator.*;
 import static uk.co.real_logic.sbe.generation.rust.RustUtil.*;
@@ -96,6 +98,60 @@ class LibRsDef
         }
     }
 
+    /**
+     * @return 
+     * @throws IOException
+     */
+    LibRs generateJson() throws IOException
+    {
+        var libRsPojo = new LibRs();
+        libRsPojo.filename = "lib";
+        try (Writer libRs = outputManager.createOutput("lib"))
+        {
+            indent(libRs, 0, "#![forbid(unsafe_code)]\n");
+            indent(libRs, 0, "#![allow(clippy::upper_case_acronyms)]\n");
+            indent(libRs, 0, "#![allow(non_camel_case_types)]\n");
+            indent(libRs, 0, "use ::core::{convert::TryInto};\n\n");
+
+            final ArrayList<String> modules = new ArrayList<>();
+            try (Stream<Path> walk = Files.walk(outputManager.getSrcDirPath()))
+            {
+                walk
+                    .filter(Files::isRegularFile)
+                    .map((path) -> path.getFileName().toString())
+                    .filter((fileName) -> fileName.endsWith(".rs"))
+                    .filter((fileName) -> !fileName.equals("lib.rs"))
+                    .map((fileName) -> fileName.substring(0, fileName.length() - 3))
+                    .forEach(modules::add);
+            }
+            // add modules
+            for (final String mod : modules)
+            {
+                indent(libRs, 0, "pub mod %s;\n", toLowerSnakeCase(mod));
+            }
+            indent(libRs, 0, "\n");
+
+            // add re-export of modules
+            for (final String module : modules)
+            {
+                indent(libRs, 0, "pub use %s::*;\n", toLowerSnakeCase(module));
+            }
+            libRsPojo.modules = modules;
+            libRsPojo.modules.replaceAll(RustUtil::toLowerSnakeCase);
+            indent(libRs, 0, "\n");
+
+            generateSbeErrorEnum(libRs);
+            generateEitherEnum(libRs);
+
+            generateEncoderTraits(libRs);
+            generateDecoderTraits(libRs);
+
+            generateReadBuf(libRs, byteOrder);
+            generateWriteBuf(libRs, byteOrder);
+        }
+        return libRsPojo;
+    }
+
     static void generateEncoderTraits(final Writer writer) throws IOException
     {
         indent(writer, 0, "pub trait Writer<'a>: Sized {\n");
@@ -125,14 +181,14 @@ class LibRsDef
         indent(writer, 0, "pub type SbeResult<T> = core::result::Result<T, SbeErr>;\n\n");
         indent(writer, 0, "#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]\n");
         indent(writer, 0, "pub enum SbeErr {\n");
-        indent(writer, 1, "ParentNotSet,\n");
+        indent(writer, 0, "    ParentNotSet,\n");
         indent(writer, 0, "}\n");
 
         indent(writer, 0, "impl core::fmt::Display for SbeErr {\n");
-        indent(writer, 1, "#[inline]\n");
-        indent(writer, 1, "fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n");
-        indent(writer, 2, "write!(f, \"{:?}\", self)\n");
-        indent(writer, 1, "}\n");
+        indent(writer, 0, "    #[inline]\n");
+        indent(writer, 0, "    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {\n");
+        indent(writer, 0, "        write!(f, \"{:?}\", self)\n");
+        indent(writer, 0, "    }\n");
         indent(writer, 0, "}\n");
 
         indent(writer, 0, "impl std::error::Error for SbeErr {}\n\n");

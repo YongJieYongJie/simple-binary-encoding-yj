@@ -15,6 +15,8 @@
  */
 package uk.co.real_logic.sbe.generation.rust;
 
+import uk.co.real_logic.sbe.generation.rust.templatemodels.SubGroupFormat;
+import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.fields.EncoderFormat;
 import uk.co.real_logic.sbe.ir.Ir;
 import uk.co.real_logic.sbe.ir.Token;
 import uk.co.real_logic.sbe.generation.rust.RustGenerator.CodecType;
@@ -22,7 +24,9 @@ import uk.co.real_logic.sbe.generation.rust.RustGenerator.CodecType;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static uk.co.real_logic.sbe.generation.rust.RustGenerator.CodecType.Encoder;
 import static uk.co.real_logic.sbe.generation.rust.RustGenerator.CodecType.Decoder;
@@ -114,6 +118,99 @@ class MessageCoderDef implements RustGenerator.ParentDef
         indent(sb, 0, "} // end %s\n\n", codecType.toString().toLowerCase()); // mod end
     }
 
+    EncoderFormat generateJson(
+        final List<Token> fields,
+        final List<Token> groups,
+        final List<Token> varData) throws IOException
+    {
+        var e = new EncoderFormat();
+        indent(sb, 0, "pub mod %s {\n", codecType.toString().toLowerCase());
+        e.coderType = codecType.toString().toLowerCase();
+        indent(sb, 1, "use super::*;\n\n");
+
+        // i.e. <name>Decoder or <name>Encoder
+        final String msgTypeName = formatStructName(msgToken.name()) + codecType.name();
+        appendMessageStruct(sb, msgTypeName);
+        e.msgTypeName = msgTypeName;
+        e.bufType = this.codecType.bufType();
+        e.blockLengthType = blockLengthType();
+        e.schemaVersionType = schemaVersionType();
+
+
+        if (codecType == Encoder)
+        {
+            RustGenerator.appendImplEncoderTrait(sb, msgTypeName);
+        }
+        else
+        {
+            RustGenerator.appendImplDecoderTrait(sb, msgTypeName);
+        }
+
+        RustGenerator.appendImplWithLifetimeHeader(sb, msgTypeName); // impl start
+        appendWrapFn(sb);
+
+        indent(sb, 2, "#[inline]\n");
+        indent(sb, 2, "pub fn encoded_length(&self) -> usize {\n");
+        indent(sb, 3, "self.limit - self.offset\n");
+        indent(sb, 2, "}\n\n");
+
+        if (codecType == Decoder)
+        {
+            appendMessageHeaderDecoderFn(sb);
+
+            RustGenerator.generateDecoderFields(sb, fields, 2);
+            RustGenerator.generateDecoderGroups(sb, groups, 2, this);
+            RustGenerator.generateDecoderVarData(sb, varData, 2, false);
+
+            e.decoderFields = RustGenerator.generateDecoderFieldsJson(sb, fields, 2);
+            e.decoderGroups = RustGenerator.generateDecoderGroupsJson(sb, groups, 2, this);
+            e.decoderVarData = RustGenerator.generateDecoderVarDataJson(sb, varData, 2, false);
+        }
+        else
+        {
+            appendMessageHeaderEncoderFn(sb);
+
+            RustGenerator.generateEncoderFields(sb, fields, 2);
+            RustGenerator.generateEncoderGroups(sb, groups, 2, this);
+            RustGenerator.generateEncoderVarData(sb, varData, 2);
+
+            e.encoderFields = RustGenerator.generateEncoderFieldsJsons(sb, fields, 2);
+            e.encoderGroups = RustGenerator.generateEncoderGroupsJson(sb, groups, 2, this);
+            e.encoderVarData = RustGenerator.generateEncoderVarDataJson(sb, varData, 2);
+        }
+
+        indent(sb, 1, "}\n\n"); // impl end
+
+        ArrayList<SubGroupFormat> subgroupsJsons = new ArrayList<>();
+        // append all subGroup generated code
+        ArrayList<SubGroup> nextSubGroups = new ArrayList<>();
+        Set<String> added = new HashSet<>();
+        while (!subGroups.isEmpty()) {
+            for (SubGroup subGroup : subGroups) {
+                if (subGroup.jsons == null) {
+                    // System.out.println("isnull");
+                    continue;
+                }
+                if (added.contains(subGroup.jsons.name)) {
+                    // System.out.println("skipping subGroup: " + subGroup.jsons.name);
+                    continue;
+                }
+                // System.out.println("visiting subGroup: " + subGroup.jsons.name);
+                added.add(subGroup.jsons.name);
+                subgroupsJsons.add(subGroup.jsons);
+                subGroup.appendTo(sb);
+                nextSubGroups.addAll(subGroup.subGroups);
+            }
+            subGroups.clear();
+            subGroups.addAll(nextSubGroups);
+            nextSubGroups.clear();
+        }
+        e.subgroups = subgroupsJsons;
+
+        indent(sb, 0, "} // end %s\n\n", codecType.toString().toLowerCase()); // mod end
+        return e;
+    }
+
     void appendTo(final Appendable dest) throws IOException
     {
         dest.append(sb);
@@ -202,7 +299,7 @@ class MessageCoderDef implements RustGenerator.ParentDef
         indent(out, 2, "}\n\n");
     }
 
-    static void generateEncoder(
+    static EncoderFormat generateEncoder(
         final Ir ir,
         final Writer out,
         final Token msgToken,
@@ -213,9 +310,14 @@ class MessageCoderDef implements RustGenerator.ParentDef
         final MessageCoderDef coderDef = new MessageCoderDef(ir, msgToken, Encoder);
         coderDef.generate(fields, groups, varData);
         coderDef.appendTo(out);
+        var e = coderDef.generateJson(fields, groups, varData);
+        // var mapper = new ObjectMapper();
+        // mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        // mapper.writeValue(System.out, e);
+        return e;
     }
 
-    static void generateDecoder(
+    static EncoderFormat generateDecoder(
         final Ir ir,
         final Writer out,
         final Token msgToken,
@@ -226,5 +328,7 @@ class MessageCoderDef implements RustGenerator.ParentDef
         final MessageCoderDef coderDef = new MessageCoderDef(ir, msgToken, Decoder);
         coderDef.generate(fields, groups, varData);
         coderDef.appendTo(out);
+        var e = coderDef.generateJson(fields, groups, varData);
+        return e;
     }
 }
