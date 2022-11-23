@@ -1,0 +1,6 @@
+/// GROUP ENCODER
+#[inline]
+pub fn {{functionName}}(self, count: {{groupSizeType}}, {{groupName}}: {{groupTypeName}}<Self>) -> {{groupTypeName}}<Self> {
+    {{groupName}}.wrap(self, count)
+}
+

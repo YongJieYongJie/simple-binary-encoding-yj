@@ -1,0 +1,80 @@
+use crate::*;
+
+pub use encoder::*;
+pub use decoder::*;
+
+pub const ENCODED_LENGTH: usize = {{encodedLength}};
+
+pub mod encoder {
+    use super::*;
+
+    #[derive(Debug, Default)]
+    pub struct {{encoderName}}<P> {
+        parent: Option<P>,
+        offset: usize,
+    }
+
+    impl<'a, P> Writer<'a> for {{encoderName}}<P> where P: Writer<'a> + Default {
+        #[inline]
+        fn get_buf_mut(&mut self) -> &mut WriteBuf<'a> {
+            if let Some(parent) = self.parent.as_mut() {
+                parent.get_buf_mut()
+            } else {
+                panic!("parent was None")
+            }
+        }
+    }
+
+    impl<'a, P> {{encoderName}}<P> where P: Writer<'a> + Default {
+        pub fn wrap(mut self, parent: P, offset: usize) -> Self {
+            self.parent = Some(parent);
+            self.offset = offset;
+            self
+        }
+
+        #[inline]
+        pub fn parent(&mut self) -> SbeResult<P> {
+            self.parent.take().ok_or(SbeErr::ParentNotSet)
+        }
+
+{{#encoderFields}}
+        {{> encoder-fields}}
+{{/encoderFields}}
+    }
+} // end encoder mod 
+
+pub mod decoder {
+    use super::*;
+
+    #[derive(Debug, Default)]
+    pub struct {{decoderName}}<P> {
+        parent: Option<P>,
+        offset: usize,
+    }
+
+    impl<'a, P> Reader<'a> for {{decoderName}}<P> where P: Reader<'a> + Default {
+        #[inline]
+        fn get_buf(&self) -> &ReadBuf<'a> {
+            self.parent.as_ref().expect("parent missing").get_buf()
+        }
+    }
+
+    impl<'a, P> {{decoderName}}<P> where P: Reader<'a> + Default {
+        pub fn wrap(mut self, parent: P, offset: usize) -> Self {
+            self.parent = Some(parent);
+            self.offset = offset;
+            self
+        }
+
+        #[inline]
+        pub fn parent(&mut self) -> SbeResult<P> {
+            self.parent.take().ok_or(SbeErr::ParentNotSet)
+        }
+
+{{#decoderFields}}
+        {{> decoder-fields}}
+{{/decoderFields}}
+    }
+} // end decoder mod 
+
+

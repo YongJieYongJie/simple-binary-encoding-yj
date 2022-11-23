@@ -1,0 +1,34 @@
+/// VAR_DATA DECODER - character encoding: '{{characterEncoding}}'
+#[inline]
+pub fn {{propertyName}}_decoder(&mut self) -> (usize, usize) {
+{{#isSubGroup}}
+    {{#versionGreaterThanZero}}
+    if self.acting_version < {{version}} {
+        return (self.parent.as_ref().unwrap().get_limit(), 0);
+    }
+
+    {{/versionGreaterThanZero}}
+    let offset = self.parent.as_ref().expect("parent missing").get_limit();
+    let data_length = self.get_buf().get_{{lengthType}}_at(offset) as usize;
+    self.parent.as_mut().unwrap().set_limit(offset + {{lengthTypeSize}} + data_length);
+{{/isSubGroup}}
+{{^isSubGroup}}
+    {{#versionGreaterThanZero}}
+    if self.acting_version < {{version}} {
+        return (self.get_limit(), 0);
+    }
+
+    {{/versionGreaterThanZero}}
+    let offset = self.get_limit();
+    let data_length = self.get_buf().get_{{lengthType}}_at(offset) as usize;
+    self.set_limit(offset + {{lengthTypeSize}} + data_length);
+{{/isSubGroup}}
+    (offset + {{lengthTypeSize}}, data_length)
+}
+
+#[inline]
+pub fn {{propertyName}}_slice(&'a self, coordinates: (usize, usize)) -> &'a [u8] {
+    debug_assert!(self.get_limit() >= coordinates.0 + coordinates.1);
+    self.get_buf().get_slice_at(coordinates.0, coordinates.1)
+}
+

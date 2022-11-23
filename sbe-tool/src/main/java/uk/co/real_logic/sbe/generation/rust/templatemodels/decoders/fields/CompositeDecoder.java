@@ -5,4 +5,5 @@ public class CompositeDecoder {
   public String decoderTypeName;
   public int version;
   public int offset;
+public boolean versionGreaterThanZero;
 }

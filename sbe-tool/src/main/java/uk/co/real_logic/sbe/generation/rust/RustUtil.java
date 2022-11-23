@@ -15,28 +15,28 @@
  */
 package uk.co.real_logic.sbe.generation.rust;
 
+import static java.lang.Long.parseLong;
+import static uk.co.real_logic.sbe.generation.Generators.toLowerFirstChar;
+import static uk.co.real_logic.sbe.generation.rust.RustGenerator.CodecType.Decoder;
+import static uk.co.real_logic.sbe.generation.rust.RustGenerator.CodecType.Encoder;
+
+import java.nio.charset.StandardCharsets;
+import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import org.agrona.Verify;
 import uk.co.real_logic.sbe.PrimitiveType;
 import uk.co.real_logic.sbe.generation.Generators;
 import uk.co.real_logic.sbe.generation.rust.RustGenerator.CodecType;
 import uk.co.real_logic.sbe.ir.Encoding;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-
-import static java.lang.Long.parseLong;
-import static java.lang.String.format;
-import static uk.co.real_logic.sbe.generation.Generators.toLowerFirstChar;
-import static uk.co.real_logic.sbe.generation.rust.RustGenerator.CodecType.Decoder;
-import static uk.co.real_logic.sbe.generation.rust.RustGenerator.CodecType.Encoder;
-
 /**
  * Utility method for Rust codec generation.
  */
 public class RustUtil
 {
-    static final String INDENT = "    ";
+
     static final Map<PrimitiveType, String> TYPE_NAME_BY_PRIMITIVE_TYPE_MAP = new EnumMap<>(PrimitiveType.class);
 
     static
@@ -271,28 +271,6 @@ public class RustUtil
     private static boolean shadowsKeyword(final String name)
     {
         return ReservedKeyword.anyMatch(name);
-    }
-
-    static Appendable indent(final Appendable appendable) throws IOException
-    {
-        return indent(appendable, 1);
-    }
-
-    static Appendable indent(final Appendable appendable, final int level) throws IOException
-    {
-        Appendable out = appendable;
-        for (int i = 0; i < level; i++)
-        {
-            out = out.append(INDENT);
-        }
-
-        return out;
-    }
-
-    static Appendable indent(final Appendable appendable, final int level, final String f, final Object... args)
-        throws IOException
-    {
-        return indent(appendable, level).append(format(f, args));
     }
 
     enum ReservedKeyword

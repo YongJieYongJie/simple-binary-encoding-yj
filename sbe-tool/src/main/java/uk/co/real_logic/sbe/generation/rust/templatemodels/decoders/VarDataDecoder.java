@@ -8,4 +8,6 @@ public class VarDataDecoder {
   public String lengthType;
   public int version;
 
+  public boolean isSubGroup;
+  public boolean versionGreaterThanZero;
 }

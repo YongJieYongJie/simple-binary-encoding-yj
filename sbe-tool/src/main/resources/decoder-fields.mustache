@@ -1,0 +1,119 @@
+{{#primitiveDecoderConstant}}
+/// CONSTANT 
+/// characterEncoding: '{{characterEncoding}}{{^characterEncoding}}N.A.{{/characterEncoding}}'
+#[inline]
+pub fn {{functionName}}(&self) -> {{&returnValue}} {
+    {{&rawConstValue}}
+}
+
+{{/primitiveDecoderConstant}}
+{{#primitiveDecoderRequired}}
+/// primitive field - 'REQUIRED'
+/// characterEncoding: '{{characterEncoding}}'
+#[inline]
+pub fn {{functionName}}(&self) -> {{rustPrimitiveType}} {
+    {{#versionAboveZero}}
+    if self.acting_version < {{version}} {
+        return {{rustLiteral}};
+    }
+
+    {{/versionAboveZero}}
+    self.get_buf().get_{{rustPrimitiveType}}_at(self.offset + {{offset}})
+}
+
+{{/primitiveDecoderRequired}}
+{{#primitiveDecoderOptional}}
+/// primitive field - 'OPTIONAL' { null_value: '{{applicableNullValue}}' }
+/// characterEncoding: '{{characterEncoding}}'
+#[inline]
+pub fn {{functionName}}(&self) -> Option<{{rustPrimitiveType}}> {
+    {{#versionGreaterThanZero}}
+    if self.acting_version < {{version}} {
+        return None;
+    }
+
+    {{/versionGreaterThanZero}}
+    let value = self.get_buf().get_{{rustPrimitiveType}}_at(self.offset + {{offset}});
+    {{#isNAN}}
+    if value.is_nan() {
+    {{/isNAN}}
+    {{^isNAN}}
+    if value == {{literal}} {
+    {{/isNAN}}
+        None
+    } else {
+        Some(value)
+    }
+}
+
+{{/primitiveDecoderOptional}}
+{{#primitiveDecoderArray}}
+#[inline]
+pub fn {{functionName}}(&self) -> [{{rustPrimitiveType}}; {{arrayLength}}] {
+    let buf = self.get_buf();
+    [
+    {{#arrayItems}}
+        buf.get_{{rustPrimitiveType}}_at(self.offset + {{baseOffset}} + {{itemOffset}}),
+    {{/arrayItems}}
+    ]
+}
+
+{{/primitiveDecoderArray}}
+{{#enumDecoderConstant}}
+/// CONSTANT enum
+#[inline]
+pub fn {{functionName}}(&self) -> {{enumType}} {
+    {{enumType}}::{{constValueName}}
+}
+
+{{/enumDecoderConstant}}
+{{#enumDecoderBasic}}
+/// REQUIRED enum
+#[inline]
+pub fn {{functionName}}(&self) -> {{enumType}} {
+    {{#versionGreaterThanZero}}
+    if self.acting_version < {{version}} {
+        return {{enumType}}::default();
+    }
+
+    {{/versionGreaterThanZero}}
+    self.get_buf().get_{{rustPrimitiveType}}_at(self.offset + {{offset}}).into()
+}
+
+{{/enumDecoderBasic}}
+{{#bitSetDecoder}}
+/// bitset field
+#[inline]
+pub fn {{functionName}}(&self) -> {{structTypeName}} {
+    {{#versionGreaterThanZero}}
+    if self.acting_version < {{version}} {
+        return {{structTypeName}}::default();
+    }
+
+    {{/versionGreaterThanZero}}
+    {{structTypeName}}::new(self.get_buf().get_{{rustPrimitiveType}}_at(self.offset + {{offset}}))
+}
+
+{{/bitSetDecoder}}
+{{#compositeDecoder}}
+/// COMPOSITE DECODER
+#[inline]
+{{#versionGreaterThanZero}}
+pub fn {{decoderName}}(self) -> Either<Self, {{decoderTypeName}}<Self>> {
+    if self.acting_version < {{version}} {
+        return Either::Left(self);
+    }
+
+    let offset = self.offset + {{offset}};
+    Either::Right({{decoderTypeName}}::default().wrap(self, offset));
+}
+
+{{/versionGreaterThanZero}}
+{{^versionGreaterThanZero}}
+pub fn {{decoderName}}(self) -> {{decoderTypeName}}<Self> {
+    let offset = self.offset + {{offset}};
+    {{decoderTypeName}}::default().wrap(self, offset)
+}
+
+{{/versionGreaterThanZero}}
+{{/compositeDecoder}}

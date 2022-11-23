@@ -1,0 +1,70 @@
+{{#primitiveEncoderConstant}}
+// skipping CONSTANT {{name}}
+
+{{/primitiveEncoderConstant}}
+{{#primitiveEncoderBasic}}
+/// primitive field '{{name}}'
+/// - min value: {{applicableMinValue}}
+/// - max value: {{applicableMaxValue}}
+/// - null value: {{applicableNullValue}}
+/// - characterEncoding: {{characterEncoding}}
+/// - semanticType: {{semanticType}}
+/// - encodedOffset: {{offset}}
+/// - encodedLength: {{encodedLength}}
+#[inline]
+pub fn {{functionName}}(&mut self, value: {{rustPrimitiveType}}) {
+    let offset = self.offset + {{offset}};
+    self.get_buf_mut().put_{{rustPrimitiveType}}_at(offset, value);
+}
+
+{{/primitiveEncoderBasic}}
+{{#primitiveEncoderArray}}
+/// primitive array field '{{name}}'
+/// - min value: {{applicableMinValue}}
+/// - max value: {{applicableMaxValue}}
+/// - null value: {{applicableNullValue}}
+/// - characterEncoding: {{characterEncoding}}
+/// - semanticType: {{semanticType}}
+/// - encodedOffset: {{offset}}
+/// - encodedLength: {{encodedLength}}
+/// - version: {{version}}
+#[inline]
+pub fn {{functionName}}(&mut self, value: [{{rustPrimitiveType}}; {{arrayLength}}]) {
+    let offset = self.offset + {{offset}};
+    let buf = self.get_buf_mut();
+{{#arrayItems}}
+    buf.put_{{rustPrimitiveType}}_at(offset + {{itemOffset}}, value[{{itemIndex}}]);
+{{/arrayItems}}
+}
+
+{{/primitiveEncoderArray}}
+{{#enumEncoderConstant}}
+// skipping CONSTANT enum '{{name}}'
+
+{{/enumEncoderConstant}}
+{{#enumEncoderBasic}}
+/// REQUIRED enum
+#[inline]
+pub fn {{functionName}}(&mut self, value: {{enumType}}) {
+    let offset = self.offset + {{offset}};
+    self.get_buf_mut().put_{{rustPrimitiveType}}_at(offset, value as {{rustPrimitiveType}})
+}
+
+{{/enumEncoderBasic}}
+{{#bitSetEncoder}}
+#[inline]
+pub fn {{functionName}}(&mut self, value: {{structTypeName}}) {
+    let offset = self.offset + {{offset}};
+    self.get_buf_mut().put_{{rustPrimitiveType}}_at(offset, value.0)
+}
+
+{{/bitSetEncoder}}
+{{#compositeEncoder}}
+/// COMPOSITE ENCODER
+#[inline]
+pub fn {{encoderFunctionName}}(self) -> {{encoderTypeName}}<Self> {
+    let offset = self.offset + {{offset}};
+    {{encoderTypeName}}::default().wrap(self, offset)
+}
+
+{{/compositeEncoder}}

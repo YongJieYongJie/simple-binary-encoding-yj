@@ -6,8 +6,4 @@ public class BitSetEncoder {
   public String structTypeName;
   public int offset;
   public String rustPrimitiveType;
-
-  // below only for decoder
-  public int version;
-
 }

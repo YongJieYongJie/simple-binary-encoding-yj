@@ -2,15 +2,15 @@ package uk.co.real_logic.sbe.generation.rust.templatemodels;
 
 import java.util.List;
 
-import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.DecoderFields;
-import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.EncoderFields;
+import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.DecoderField;
+import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.EncoderField;
 
 public class Composite {
     public String filename;
     public String encoderName;
     public int encodedLength;
-    public List<EncoderFields> encoderFields;
+    public List<EncoderField> encoderFields;
 
     public String decoderName;
-    public List<DecoderFields> decoderFields;
+    public List<DecoderField> decoderFields;
 }

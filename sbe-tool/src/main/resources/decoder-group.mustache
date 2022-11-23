@@ -1,0 +1,7 @@
+/// GROUP DECODER
+#[inline]
+pub fn {{functionName}}(self) -> {{groupName}}<Self> {
+    let acting_version = self.acting_version;
+    {{groupName}}::default().wrap(self, acting_version as usize)
+}
+

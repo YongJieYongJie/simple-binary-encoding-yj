@@ -15,37 +15,33 @@
  */
 package uk.co.real_logic.sbe.generation.rust;
 
+import static uk.co.real_logic.sbe.generation.rust.RustUtil.rustTypeName;
+
+import java.util.ArrayList;
+import java.util.List;
 import uk.co.real_logic.sbe.PrimitiveType;
 import uk.co.real_logic.sbe.generation.Generators;
+import uk.co.real_logic.sbe.generation.rust.RustGenerator.SubGroupContainer;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.SubGroupFormat;
 import uk.co.real_logic.sbe.ir.Token;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import static uk.co.real_logic.sbe.generation.rust.RustUtil.indent;
-import static uk.co.real_logic.sbe.generation.rust.RustUtil.rustTypeName;
-
-class SubGroup implements RustGenerator.ParentDef
+class SubGroup implements SubGroupContainer
 {
-    private final StringBuilder sb = new StringBuilder();
-    public final ArrayList<SubGroup> subGroups = new ArrayList<>();
-    private final String name;
-    private final int level;
-    private final Token groupToken;
-    public SubGroupFormat jsons;
 
-    SubGroup(final String name, final int level, final Token groupToken)
+    public final List<SubGroup> subGroups = new ArrayList<>();
+    private final String name;
+    private final Token groupToken;
+    public SubGroupFormat subGroupValue;
+
+    SubGroup(final String name, final Token groupToken)
     {
         this.name = name;
-        this.level = level;
         this.groupToken = groupToken;
     }
 
-    public SubGroup addSubGroup(final String name, final int level, final Token groupToken)
+    public SubGroup addSubGroup(final String name, final Token groupToken)
     {
-        final SubGroup subGroup = new SubGroup(name, level, groupToken);
+        final SubGroup subGroup = new SubGroup(name, groupToken);
         subGroups.add(subGroup);
 
         return subGroup;
@@ -56,112 +52,20 @@ class SubGroup implements RustGenerator.ParentDef
         final List<Token> fields,
         final List<Token> groups,
         final List<Token> varData,
-        final int index) throws IOException
-    {
-        var e = new SubGroupFormat();
+        final int index) {
+        var subGroupPojo = new SubGroupFormat();
         final Token blockLengthToken = Generators.findFirst("blockLength", tokens, index);
-        final PrimitiveType blockLengthPrimitiveType = blockLengthToken.encoding().primitiveType();
-
         final Token numInGroupToken = Generators.findFirst("numInGroup", tokens, index);
-        final PrimitiveType numInGroupPrimitiveType = numInGroupToken.encoding().primitiveType();
-
-        // define struct...
-        indent(sb, level - 1, "#[derive(Debug, Default)]\n");
-        indent(sb, level - 1, "pub struct %s<P> {\n", name);
-        indent(sb, level, "parent: Option<P>,\n");
-        indent(sb, level, "count: %s,\n", rustTypeName(numInGroupPrimitiveType));
-        e.numInGroupPrimitiveType = rustTypeName(numInGroupPrimitiveType);
-        indent(sb, level, "index: usize,\n");
-        indent(sb, level, "offset: usize,\n");
-        indent(sb, level, "initial_limit: usize,\n");
-        indent(sb, level - 1, "}\n\n");
-
-        RustGenerator.appendImplEncoderForComposite(sb, level - 1, name);
-        e.name = name;
-
-        // define impl...
-        indent(sb, level - 1, "impl<'a, P> %s<P> where P: Encoder<'a> + Default {\n", name);
-
-        final int dimensionHeaderSize = tokens.get(index).encodedLength();
-
-        // define wrap...
-        indent(sb, level, "#[inline]\n");
-        indent(sb, level, "pub fn wrap(\n");
-        indent(sb, level + 1, "mut self,\n");
-        indent(sb, level + 1, "mut parent: P,\n");
-        indent(sb, level + 1, "count: %s,\n", rustTypeName(numInGroupPrimitiveType));
-        indent(sb, level, ") -> Self {\n");
-        indent(sb, level + 1, "let initial_limit = parent.get_limit();\n");
-        indent(sb, level + 1, "parent.set_limit(initial_limit + %d);\n", dimensionHeaderSize);
-        e.dimensionHeaderSize = dimensionHeaderSize;
-        indent(sb, level + 1, "parent.get_buf_mut().put_%s_at(initial_limit, Self::block_length());\n",
-            rustTypeName(blockLengthPrimitiveType));
-        e.blockLengthPrimitiveType = rustTypeName(blockLengthPrimitiveType);
-        indent(sb, level + 1, "parent.get_buf_mut().put_%s_at(initial_limit + %d, count);\n",
-            rustTypeName(numInGroupPrimitiveType), numInGroupToken.offset());
-        e.offset = numInGroupToken.offset();
-
-        indent(sb, level + 1, "self.parent = Some(parent);\n");
-        indent(sb, level + 1, "self.count = count;\n");
-        indent(sb, level + 1, "self.index = usize::MAX;\n");
-        indent(sb, level + 1, "self.offset = usize::MAX;\n");
-        indent(sb, level + 1, "self.initial_limit = initial_limit;\n");
-        indent(sb, level + 1, "self\n");
-        indent(sb, level, "}\n\n");
-
-        // block_length function
-        indent(sb, level, "#[inline]\n");
-        indent(sb, level, "pub fn block_length() -> %s {\n", rustTypeName(blockLengthPrimitiveType));
-        indent(sb, level + 1, "%d\n", this.groupToken.encodedLength());
-        e.encodedLength = this.groupToken.encodedLength();
-        indent(sb, level, "}\n\n");
-
-        // parent function
-        indent(sb, level, "#[inline]\n");
-        indent(sb, level, "pub fn parent(&mut self) -> SbeResult<P> {\n");
-        indent(sb, level + 1, "self.parent.take().ok_or(SbeErr::ParentNotSet)\n");
-        indent(sb, level, "}\n\n");
-
-        // advance function...
-        indent(sb, level, "/// will return Some(current index) when successful otherwise None\n");
-        indent(sb, level, "#[inline]\n");
-        indent(sb, level, "pub fn advance(&mut self) -> SbeResult<Option<usize>> {\n");
-        indent(sb, level + 1, "let index = self.index.wrapping_add(1);\n");
-        indent(sb, level + 1, "if index >= self.count as usize {\n");
-        indent(sb, level + 2, "return Ok(None);\n");
-        indent(sb, level + 1, "}\n");
-
-        indent(sb, level + 1, "if let Some(parent) = self.parent.as_mut() {\n");
-        indent(sb, level + 2, "self.offset = parent.get_limit();\n");
-        indent(sb, level + 2, "parent.set_limit(self.offset + Self::block_length() as usize);\n");
-        indent(sb, level + 2, "self.index = index;\n");
-        indent(sb, level + 2, "Ok(Some(index))\n");
-        indent(sb, level + 1, "} else {\n");
-        indent(sb, level + 2, "Err(SbeErr::ParentNotSet)\n");
-        indent(sb, level + 1, "}\n");
-        indent(sb, level, "}\n\n");
-
-        RustGenerator.generateEncoderFields(sb, fields, level);
-        RustGenerator.generateEncoderGroups(sb, groups, level, this);
-        RustGenerator.generateEncoderVarData(sb, varData, level);
-
-        var encoderFieldsJsons = RustGenerator.generateEncoderFieldsJsons(sb, fields, level);
-        // System.out.println("encoderFieldsJsons.size(): " + encoderFieldsJsons.size());
-        // var mapper = new ObjectMapper();
-        // mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-        // mapper.writeValue(System.out, encoderFieldsJsons);
-        e.encoderFields = encoderFieldsJsons;
-        var encoderGroupsJsons = RustGenerator.generateEncoderGroupsJson(sb, groups, level, this);
-        e.encoderGroups = encoderGroupsJsons;
-        var encoderVarData = RustGenerator.generateEncoderVarDataJson(sb, varData, level);
-        e.encoderVarData = encoderVarData;
-
-        indent(sb, level - 1, "}\n\n"); // close impl
-        // var mapper = new ObjectMapper();
-        // var jsonString = mapper.writeValueAsString(e);
-        // System.out.println("writing subgroup's json string");
-        // json = mapper.writeValueAsString(e);
-        jsons = e;
+        subGroupPojo.numInGroupPrimitiveType = rustTypeName(numInGroupToken.encoding().primitiveType());
+        subGroupPojo.name = name;
+        subGroupPojo.dimensionHeaderSize = tokens.get(index).encodedLength();
+        subGroupPojo.blockLengthPrimitiveType = rustTypeName(blockLengthToken.encoding().primitiveType());
+        subGroupPojo.offset = numInGroupToken.offset();
+        subGroupPojo.encodedLength = this.groupToken.encodedLength();
+        subGroupPojo.encoderFields = RustGenerator.generateEncoderFields(fields);
+        subGroupPojo.encoderGroups = RustGenerator.generateEncoderGroups(groups, this);
+        subGroupPojo.encoderVarData = RustGenerator.generateEncoderVarData(varData);
+        subGroupValue = subGroupPojo;
     }
 
     void generateDecoder(
@@ -169,206 +73,26 @@ class SubGroup implements RustGenerator.ParentDef
         final List<Token> fields,
         final List<Token> groups,
         final List<Token> varData,
-        final int index) throws IOException
+        final int index)
     {
+        var subGroupPojo = new SubGroupFormat();
         final Token blockLengthToken = Generators.findFirst("blockLength", tokens, index);
         final PrimitiveType blockLengthPrimitiveType = blockLengthToken.encoding().primitiveType();
 
         final Token numInGroupToken = Generators.findFirst("numInGroup", tokens, index);
         final PrimitiveType numInGroupPrimitiveType = numInGroupToken.encoding().primitiveType();
 
-        // define struct...
-        indent(sb, level - 1, "#[derive(Debug, Default)]\n");
-        indent(sb, level - 1, "pub struct %s<P> {\n", name);
-        indent(sb, level, "parent: Option<P>,\n");
-        indent(sb, level, "block_length: usize,\n");
-        indent(sb, level, "acting_version: usize,\n");
-        indent(sb, level, "count: %s,\n", rustTypeName(numInGroupPrimitiveType));
-        indent(sb, level, "index: usize,\n");
-        indent(sb, level, "offset: usize,\n");
-        indent(sb, level - 1, "}\n\n");
+        subGroupPojo.numInGroupPrimitiveType = rustTypeName(numInGroupPrimitiveType);
+        subGroupPojo.name = name;
+        subGroupPojo.dimensionHeaderSize = tokens.get(index).encodedLength();
 
-        RustGenerator.appendImplDecoderForComposite(sb, level - 1, name);
+        subGroupPojo.blockLengthPrimitiveType = rustTypeName(blockLengthPrimitiveType);
+        subGroupPojo.offset = numInGroupToken.offset();
+        subGroupPojo.groupToken = groupToken.toString();
 
-        // define impl...
-        indent(sb, level - 1, "impl<'a, P> %s<P> where P: Decoder<'a> + Default {\n", name);
-
-        final int dimensionHeaderSize = tokens.get(index).encodedLength();
-
-        // define wrap...
-        indent(sb, level, "pub fn wrap(\n");
-        indent(sb, level + 1, "mut self,\n");
-        indent(sb, level + 1, "mut parent: P,\n");
-        indent(sb, level + 1, "acting_version: usize,\n");
-        indent(sb, level, ") -> Self {\n");
-        indent(sb, level + 1, "let initial_offset = parent.get_limit();\n");
-        indent(sb, level + 1, "let block_length = parent.get_buf().get_%s_at(initial_offset) as usize;\n",
-            rustTypeName(blockLengthPrimitiveType));
-        indent(sb, level + 1, "let count = parent.get_buf().get_%s_at(initial_offset + %d);\n",
-            rustTypeName(numInGroupPrimitiveType), numInGroupToken.offset());
-        indent(sb, level + 1, "parent.set_limit(initial_offset + %d);\n",
-            dimensionHeaderSize);
-
-        indent(sb, level + 1, "self.parent = Some(parent);\n");
-        indent(sb, level + 1, "self.block_length = block_length;\n");
-        indent(sb, level + 1, "self.acting_version = acting_version;\n");
-        indent(sb, level + 1, "self.count = count;\n");
-        indent(sb, level + 1, "self.index = usize::MAX;\n");
-        indent(sb, level + 1, "self.offset = 0;\n");
-        indent(sb, level + 1, "self\n");
-        indent(sb, level, "}\n\n");
-
-        // parent function
-        indent(sb, level, "/// group token - %s\n", groupToken);
-        indent(sb, level, "#[inline]\n");
-        indent(sb, level, "pub fn parent(&mut self) -> SbeResult<P> {\n");
-        indent(sb, level + 1, "self.parent.take().ok_or(SbeErr::ParentNotSet)\n");
-        indent(sb, level, "}\n\n");
-
-        // count function
-        indent(sb, level, "#[inline]\n");
-        indent(sb, level, "pub fn count(&self) -> %s {\n", rustTypeName(numInGroupPrimitiveType));
-        indent(sb, level + 1, "self.count\n");
-        indent(sb, level, "}\n\n");
-
-        // advance function...
-        indent(sb, level, "/// will return Some(current index) when successful otherwise None\n");
-        indent(sb, level, "pub fn advance(&mut self) -> SbeResult<Option<usize>> {\n");
-        indent(sb, level + 1, "let index = self.index.wrapping_add(1);\n");
-        indent(sb, level + 1, "if index >= self.count as usize {\n");
-        indent(sb, level + 2, " return Ok(None);\n");
-        indent(sb, level + 1, "}\n");
-        indent(sb, level + 1, "if let Some(parent) = self.parent.as_mut() {\n");
-        indent(sb, level + 2, "self.offset = parent.get_limit();\n");
-        indent(sb, level + 2, "parent.set_limit(self.offset + self.block_length as usize);\n");
-        indent(sb, level + 2, "self.index = index;\n");
-        indent(sb, level + 2, "Ok(Some(index))\n");
-        indent(sb, level + 1, "} else {\n");
-        indent(sb, level + 2, "Err(SbeErr::ParentNotSet)\n");
-        indent(sb, level + 1, "}\n");
-        indent(sb, level, "}\n\n");
-
-        RustGenerator.generateDecoderFields(sb, fields, level);
-        RustGenerator.generateDecoderGroups(sb, groups, level, this);
-        RustGenerator.generateDecoderVarData(sb, varData, level, true);
-
-        indent(sb, level - 1, "}\n\n"); // close impl
-    }
-
-    void generateDecoderJson(
-        final List<Token> tokens,
-        final List<Token> fields,
-        final List<Token> groups,
-        final List<Token> varData,
-        final int index) throws IOException
-    {
-        var e = new SubGroupFormat();
-        final Token blockLengthToken = Generators.findFirst("blockLength", tokens, index);
-        final PrimitiveType blockLengthPrimitiveType = blockLengthToken.encoding().primitiveType();
-
-        final Token numInGroupToken = Generators.findFirst("numInGroup", tokens, index);
-        final PrimitiveType numInGroupPrimitiveType = numInGroupToken.encoding().primitiveType();
-
-        // define struct...
-        indent(sb, level - 1, "#[derive(Debug, Default)]\n");
-        indent(sb, level - 1, "pub struct %s<P> {\n", name);
-        indent(sb, level, "parent: Option<P>,\n");
-        indent(sb, level, "block_length: usize,\n");
-        indent(sb, level, "acting_version: usize,\n");
-        indent(sb, level, "count: %s,\n", rustTypeName(numInGroupPrimitiveType));
-        e.numInGroupPrimitiveType = rustTypeName(numInGroupPrimitiveType);
-        indent(sb, level, "index: usize,\n");
-        indent(sb, level, "offset: usize,\n");
-        indent(sb, level - 1, "}\n\n");
-
-        RustGenerator.appendImplDecoderForComposite(sb, level - 1, name);
-        e.name = name;
-
-        // define impl...
-        indent(sb, level - 1, "impl<'a, P> %s<P> where P: Decoder<'a> + Default {\n", name);
-
-        final int dimensionHeaderSize = tokens.get(index).encodedLength();
-        e.dimensionHeaderSize = tokens.get(index).encodedLength();
-
-        // define wrap...
-        indent(sb, level, "pub fn wrap(\n");
-        indent(sb, level + 1, "mut self,\n");
-        indent(sb, level + 1, "mut parent: P,\n");
-        indent(sb, level + 1, "acting_version: usize,\n");
-        indent(sb, level, ") -> Self {\n");
-        indent(sb, level + 1, "let initial_offset = parent.get_limit();\n");
-        indent(sb, level + 1, "let block_length = parent.get_buf().get_%s_at(initial_offset) as usize;\n",
-            rustTypeName(blockLengthPrimitiveType));
-        e.blockLengthPrimitiveType = rustTypeName(blockLengthPrimitiveType);
-        indent(sb, level + 1, "let count = parent.get_buf().get_%s_at(initial_offset + %d);\n",
-            rustTypeName(numInGroupPrimitiveType), numInGroupToken.offset());
-        e.offset = numInGroupToken.offset();
-        indent(sb, level + 1, "parent.set_limit(initial_offset + %d);\n",
-            dimensionHeaderSize);
-
-
-        indent(sb, level + 1, "self.parent = Some(parent);\n");
-        indent(sb, level + 1, "self.block_length = block_length;\n");
-        indent(sb, level + 1, "self.acting_version = acting_version;\n");
-        indent(sb, level + 1, "self.count = count;\n");
-        indent(sb, level + 1, "self.index = usize::MAX;\n");
-        indent(sb, level + 1, "self.offset = 0;\n");
-        indent(sb, level + 1, "self\n");
-        indent(sb, level, "}\n\n");
-
-        // parent function
-        indent(sb, level, "/// group token - %s\n", groupToken);
-        e.groupToken = groupToken.toString();
-        indent(sb, level, "#[inline]\n");
-        indent(sb, level, "pub fn parent(&mut self) -> SbeResult<P> {\n");
-        indent(sb, level + 1, "self.parent.take().ok_or(SbeErr::ParentNotSet)\n");
-        indent(sb, level, "}\n\n");
-
-        // count function
-        indent(sb, level, "#[inline]\n");
-        indent(sb, level, "pub fn count(&self) -> %s {\n", rustTypeName(numInGroupPrimitiveType));
-        indent(sb, level + 1, "self.count\n");
-        indent(sb, level, "}\n\n");
-
-        // advance function...
-        indent(sb, level, "/// will return Some(current index) when successful otherwise None\n");
-        indent(sb, level, "pub fn advance(&mut self) -> SbeResult<Option<usize>> {\n");
-        indent(sb, level + 1, "let index = self.index.wrapping_add(1);\n");
-        indent(sb, level + 1, "if index >= self.count as usize {\n");
-        indent(sb, level + 2, " return Ok(None);\n");
-        indent(sb, level + 1, "}\n");
-        indent(sb, level + 1, "if let Some(parent) = self.parent.as_mut() {\n");
-        indent(sb, level + 2, "self.offset = parent.get_limit();\n");
-        indent(sb, level + 2, "parent.set_limit(self.offset + self.block_length as usize);\n");
-        indent(sb, level + 2, "self.index = index;\n");
-        indent(sb, level + 2, "Ok(Some(index))\n");
-        indent(sb, level + 1, "} else {\n");
-        indent(sb, level + 2, "Err(SbeErr::ParentNotSet)\n");
-        indent(sb, level + 1, "}\n");
-        indent(sb, level, "}\n\n");
-
-        RustGenerator.generateDecoderFields(sb, fields, level);
-        RustGenerator.generateDecoderGroups(sb, groups, level, this);
-        RustGenerator.generateDecoderVarData(sb, varData, level, true);
-
-        var decoderFieldsJsons = RustGenerator.generateDecoderFieldsJson(sb, fields, level);
-        e.decoderFields = decoderFieldsJsons;
-        var decoderGroupsJsons = RustGenerator.generateDecoderGroupsJson(sb, groups, level, this);
-        e.decoderGroups = decoderGroupsJsons;
-        var decoderVardata = RustGenerator.generateDecoderVarDataJson(sb, varData, level, true);
-        e.decoderVarData = decoderVardata;
-
-        indent(sb, level - 1, "}\n\n"); // close impl
-        jsons = e;
-    }
-
-    void appendTo(final Appendable dest) throws IOException
-    {
-        dest.append(sb);
-
-        for (final SubGroup subGroup : subGroups)
-        {
-            subGroup.appendTo(dest);
-        }
+        subGroupPojo.decoderFields = RustGenerator.generateDecoderFields(fields);
+        subGroupPojo.decoderGroups = RustGenerator.generateDecoderGroups(groups, this);
+        subGroupPojo.decoderVarData = RustGenerator.generateDecoderVarData(varData, true);
+        subGroupValue = subGroupPojo;
     }
 }

@@ -9,7 +9,7 @@ import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.fields.Primi
 import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.fields.PrimitiveDecoderOptional;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.fields.PrimitiveDecoderRequired;
 
-public class DecoderFields {
+public class DecoderField {
 
   public PrimitiveDecoderArray primitiveDecoderArray;
   public PrimitiveDecoderConstant primitiveDecoderConstant;
