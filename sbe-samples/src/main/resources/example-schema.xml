@@ -32,6 +32,7 @@
             <ref name="efficiency" type="Percentage"/>
             <ref name="boosterEnabled" type="BooleanType"/>
             <ref name="booster" type="Booster"/>
+            <ref name="secondBooster" type="Booster"/>
         </composite>
         <enum name="BooleanType" encodingType="uint8" description="Boolean Type.">
             <validValue name="F" description="False value representation.">0</validValue>
