@@ -15,7 +15,7 @@ public class SubGroupFormat {
   public int offset;
   public int encodedLength;
   public List<FieldEncoder> fieldEncoders;
-  public Object encoderGroups;
+  public Object groupEncoders;
   public List<VarDataEncoder> encoderVarData;
   public String groupToken; // Only for decoder
   public List<FieldDecoder> fieldDecoders;

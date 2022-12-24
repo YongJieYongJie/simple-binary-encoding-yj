@@ -37,7 +37,7 @@ public class FieldEncoder {
       public String bufType;
       public String msgTypeName;
       public List<FieldEncoder> fieldEncoders;
-      public List<GroupEncoder> encoderGroups;
+      public List<GroupEncoder> groupEncoders;
       public List<VarDataEncoder> encoderVarData;
       public List<SubGroupFormat> subgroups;
       public List<FieldDecoder> fieldDecoders;

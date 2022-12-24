@@ -65,7 +65,7 @@ class MessageCodecGenerator implements SubGroupContainer
         else
         {
             messageValues.fieldEncoders = RustGenerator.generateEncoderFields(fields);
-            messageValues.encoderGroups = RustGenerator.generateEncoderGroups(groups, this);
+            messageValues.groupEncoders = RustGenerator.generateEncoderGroups(groups, this);
             messageValues.encoderVarData = RustGenerator.generateEncoderVarData(varData);
         }
 
