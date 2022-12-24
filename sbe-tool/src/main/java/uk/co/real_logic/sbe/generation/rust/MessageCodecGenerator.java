@@ -60,7 +60,7 @@ class MessageCodecGenerator implements SubGroupContainer
         {
             messageValues.fieldDecoders = RustGenerator.generateDecoderFields(fields);
             messageValues.groupDecoders = RustGenerator.generateDecoderGroups(groups, this);
-            messageValues.decoderVarData = RustGenerator.generateDecoderVarData(varData, false);
+            messageValues.varDataDecoders = RustGenerator.generateDecoderVarData(varData, false);
         }
         else
         {

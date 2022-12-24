@@ -42,7 +42,7 @@ public class FieldEncoder {
       public List<SubGroupFormat> subgroups;
       public List<FieldDecoder> fieldDecoders;
       public List<GroupDecoder> groupDecoders;
-      public List<VarDataDecoder> decoderVarData;
+      public List<VarDataDecoder> varDataDecoders;
 
       // below only for decoder
       public String blockLengthType;
