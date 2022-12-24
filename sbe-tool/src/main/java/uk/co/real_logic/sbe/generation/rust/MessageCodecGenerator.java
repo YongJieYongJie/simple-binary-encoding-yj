@@ -27,7 +27,7 @@ import java.util.Set;
 import uk.co.real_logic.sbe.generation.rust.RustGenerator.CodecType;
 import uk.co.real_logic.sbe.generation.rust.RustGenerator.SubGroupContainer;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.SubGroupFormat;
-import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.fields.EncoderDecoderFormat;
+import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.FieldEncoder.EncoderDecoderFormat;
 import uk.co.real_logic.sbe.ir.Ir;
 import uk.co.real_logic.sbe.ir.Token;
 

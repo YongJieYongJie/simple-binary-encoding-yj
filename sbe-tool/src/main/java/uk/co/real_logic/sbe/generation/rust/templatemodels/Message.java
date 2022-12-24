@@ -1,6 +1,6 @@
 package uk.co.real_logic.sbe.generation.rust.templatemodels;
 
-import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.fields.EncoderDecoderFormat;
+import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.FieldEncoder.EncoderDecoderFormat;
 
 public class Message {
     public String blockLengthType;
