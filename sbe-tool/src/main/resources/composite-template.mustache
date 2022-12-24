@@ -71,9 +71,9 @@ pub mod decoder {
             self.parent.take().ok_or(SbeErr::ParentNotSet)
         }
 
-{{#decoderFields}}
+{{#fieldDecoders}}
         {{> decoder-fields}}
-{{/decoderFields}}
+{{/fieldDecoders}}
     }
 } // end decoder mod 
 

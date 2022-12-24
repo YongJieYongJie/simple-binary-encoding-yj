@@ -2,7 +2,7 @@ package uk.co.real_logic.sbe.generation.rust.templatemodels;
 
 import java.util.List;
 
-import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.DecoderField;
+import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.FieldDecoder;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.EncoderField;
 
 public class Composite {
@@ -12,5 +12,5 @@ public class Composite {
     public List<EncoderField> encoderFields;
 
     public String decoderName;
-    public List<DecoderField> decoderFields;
+    public List<FieldDecoder> fieldDecoders;
 }

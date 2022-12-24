@@ -90,7 +90,7 @@ class SubGroup implements SubGroupContainer
         subGroupPojo.offset = numInGroupToken.offset();
         subGroupPojo.groupToken = groupToken.toString();
 
-        subGroupPojo.decoderFields = RustGenerator.generateDecoderFields(fields);
+        subGroupPojo.fieldDecoders = RustGenerator.generateDecoderFields(fields);
         subGroupPojo.decoderGroups = RustGenerator.generateDecoderGroups(groups, this);
         subGroupPojo.decoderVarData = RustGenerator.generateDecoderVarData(varData, true);
         subGroupValue = subGroupPojo;

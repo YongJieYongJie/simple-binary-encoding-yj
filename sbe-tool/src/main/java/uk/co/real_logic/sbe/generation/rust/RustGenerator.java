@@ -55,7 +55,7 @@ import uk.co.real_logic.sbe.generation.rust.templatemodels.Enum;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.Enum.EnumItem;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.LibRs;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.Message;
-import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.DecoderField;
+import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.FieldDecoder;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.GroupDecoder;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.VarDataDecoder;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.fields.BitSetDecoder;
@@ -309,24 +309,24 @@ public class RustGenerator implements CodeGenerator {
     return wrapper;
   }
 
-  static List<DecoderField> generateDecoderFields(final List<Token> tokens) {
-    List<DecoderField> decoderFields = new ArrayList<>();
+  static List<FieldDecoder> generateDecoderFields(final List<Token> tokens) {
+    List<FieldDecoder> fieldDecoders = new ArrayList<>();
     Generators.forEachField(tokens, (fieldToken, typeToken) -> {
       final String name = fieldToken.name();
       final Encoding encoding = typeToken.encoding();
 
       switch (typeToken.signal()) {
-        case ENCODING -> decoderFields.add(generatePrimitiveDecoder(typeToken, fieldToken, name, encoding));
-        case BEGIN_ENUM -> decoderFields.add(generateEnumDecoder(fieldToken, typeToken, name));
-        case BEGIN_SET -> decoderFields.add(generateBitSetDecoder(typeToken, name));
-        case BEGIN_COMPOSITE -> decoderFields.add(generateCompositeDecoder(fieldToken, typeToken, name));
+        case ENCODING -> fieldDecoders.add(generatePrimitiveDecoder(typeToken, fieldToken, name, encoding));
+        case BEGIN_ENUM -> fieldDecoders.add(generateEnumDecoder(fieldToken, typeToken, name));
+        case BEGIN_SET -> fieldDecoders.add(generateBitSetDecoder(typeToken, name));
+        case BEGIN_COMPOSITE -> fieldDecoders.add(generateCompositeDecoder(fieldToken, typeToken, name));
         default -> throw new UnsupportedOperationException("Unable to handle: " + typeToken);
       }
     });
-    return decoderFields;
+    return fieldDecoders;
   }
 
-  private static DecoderField generateCompositeDecoder(
+  private static FieldDecoder generateCompositeDecoder(
       final Token fieldToken,
       final Token typeToken,
       final String name)
@@ -337,12 +337,12 @@ public class RustGenerator implements CodeGenerator {
     e.versionGreaterThanZero = fieldToken.version() > 0;
     e.version = fieldToken.version();
     e.offset = fieldToken.offset();
-    var wrapper = new DecoderField();
+    var wrapper = new FieldDecoder();
     wrapper.compositeDecoder = e;
     return wrapper;
   }
 
-  private static DecoderField generateBitSetDecoder(final Token bitsetToken, final String name)
+  private static FieldDecoder generateBitSetDecoder(final Token bitsetToken, final String name)
       {
     var e = new BitSetDecoder();
     e.functionName = formatFunctionName(name);
@@ -351,12 +351,12 @@ public class RustGenerator implements CodeGenerator {
     e.version = bitsetToken.version();
     e.rustPrimitiveType = rustTypeName(bitsetToken.encoding().primitiveType());
     e.offset = bitsetToken.offset();
-    var wrapper = new DecoderField();
+    var wrapper = new FieldDecoder();
     wrapper.bitSetDecoder = e;
     return wrapper;
   }
 
-  private static DecoderField generatePrimitiveArrayDecoderJson(
+  private static FieldDecoder generatePrimitiveArrayDecoderJson(
       final Token fieldToken, final Token typeToken, final String name) {
     var e = new PrimitiveDecoderArray();
     Encoding encoding = typeToken.encoding();
@@ -384,12 +384,12 @@ public class RustGenerator implements CodeGenerator {
       arrayItems.add(arrayItem);
     }
     e.arrayItems = arrayItems;
-    var wrapper = new DecoderField();
+    var wrapper = new FieldDecoder();
     wrapper.primitiveDecoderArray = e;
     return wrapper;
   }
 
-  private static DecoderField generatePrimitiveConstantDecoderJson(
+  private static FieldDecoder generatePrimitiveConstantDecoderJson(
       final String name, final Encoding encoding) {
     var e = new PrimitiveDecoderConstant();
     assert encoding.presence() == Encoding.Presence.CONSTANT;
@@ -411,12 +411,12 @@ public class RustGenerator implements CodeGenerator {
     }
     e.functionName = formatFunctionName(name);
 
-    var wrapper = new DecoderField();
+    var wrapper = new FieldDecoder();
     wrapper.primitiveDecoderConstant = e;
     return wrapper;
   }
 
-  private static DecoderField generatePrimitiveOptionalDecoderJson(
+  private static FieldDecoder generatePrimitiveOptionalDecoderJson(
       final Token fieldToken,
       final String name,
       final Encoding encoding) {
@@ -441,12 +441,12 @@ public class RustGenerator implements CodeGenerator {
     } else {
       e.literal = literal;
     }
-    var wrapper = new DecoderField();
+    var wrapper = new FieldDecoder();
     wrapper.primitiveDecoderOptional = e;
     return wrapper;
   }
 
-  private static DecoderField generatePrimitiveRequiredDecoderJson(
+  private static FieldDecoder generatePrimitiveRequiredDecoderJson(
       final Token fieldToken,
       final String name,
       final Encoding encoding) {
@@ -462,12 +462,12 @@ public class RustGenerator implements CodeGenerator {
       e.versionAboveZero.applicableNullValue = encoding.applicableNullValue().toString();
     }
     e.offset = fieldToken.offset();
-    var wrapper = new DecoderField();
+    var wrapper = new FieldDecoder();
     wrapper.primitiveDecoderRequired = e;
     return wrapper;
   }
 
-  private static DecoderField generateEnumDecoder(
+  private static FieldDecoder generateEnumDecoder(
       final Token fieldToken,
       final Token typeToken,
       final String name)
@@ -483,7 +483,7 @@ public class RustGenerator implements CodeGenerator {
       enumDecoderConstant.constValueName =
           -1 == indexOfDot ? rawConstValueName : rawConstValueName.substring(indexOfDot + 1);
       enumDecoderConstant.functionName = formatFunctionName(name);
-      var wrapper1 = new DecoderField();
+      var wrapper1 = new FieldDecoder();
       wrapper1.enumDecoderConstant = enumDecoderConstant;
       return wrapper1;
     } else {
@@ -494,7 +494,7 @@ public class RustGenerator implements CodeGenerator {
       enumDecoderBasic.enumType = enumType;
       enumDecoderBasic.rustPrimitiveType = rustTypeName(typeToken.encoding().primitiveType());
       enumDecoderBasic.offset = typeToken.offset();
-      var wrapper2 = new DecoderField();
+      var wrapper2 = new FieldDecoder();
       wrapper2.enumDecoderBasic = enumDecoderBasic;
       return wrapper2;
     }
@@ -667,7 +667,7 @@ public class RustGenerator implements CodeGenerator {
     compositePojo.encoderName = encoderName(compositeName);
     compositePojo.encoderFields = generateCompositeFieldsEncoder(tokens);
     compositePojo.decoderName = decoderName(compositeName);
-    compositePojo.decoderFields = generateCompositeFieldsDecoder(tokens);
+    compositePojo.fieldDecoders = generateCompositeFieldsDecoder(tokens);
     return compositePojo;
   }
 
@@ -700,29 +700,29 @@ public class RustGenerator implements CodeGenerator {
     return generatePrimitiveEncoderJSONBasic(typeToken, name);
   }
 
-  private static List<DecoderField> generateCompositeFieldsDecoder(final List<Token> tokens) {
-    List<DecoderField> decoderFieldValues = new ArrayList<>();
+  private static List<FieldDecoder> generateCompositeFieldsDecoder(final List<Token> tokens) {
+    List<FieldDecoder> fieldDecoderValues = new ArrayList<>();
     for (int i = 1, end = tokens.size() - 1; i < end; ) {
       final Token encodingToken = tokens.get(i);
 
       var name = encodingToken.name();
       var encoding = encodingToken.encoding();
       switch (encodingToken.signal()) {
-        case ENCODING -> decoderFieldValues.add(
+        case ENCODING -> fieldDecoderValues.add(
             generatePrimitiveDecoder(encodingToken, encodingToken, name, encoding));
-        case BEGIN_ENUM -> decoderFieldValues.add(generateEnumDecoder(encodingToken, encodingToken, name));
-        case BEGIN_SET -> decoderFieldValues.add(generateBitSetDecoder(encodingToken, name));
+        case BEGIN_ENUM -> fieldDecoderValues.add(generateEnumDecoder(encodingToken, encodingToken, name));
+        case BEGIN_SET -> fieldDecoderValues.add(generateBitSetDecoder(encodingToken, name));
         case BEGIN_COMPOSITE ->
-            decoderFieldValues.add(generateCompositeDecoder(encodingToken, encodingToken, name));
+            fieldDecoderValues.add(generateCompositeDecoder(encodingToken, encodingToken, name));
         default -> {
         }
       }
       i += encodingToken.componentTokenCount();
     }
-    return decoderFieldValues;
+    return fieldDecoderValues;
   }
 
-  private static DecoderField generatePrimitiveDecoder(Token typeToken,
+  private static FieldDecoder generatePrimitiveDecoder(Token typeToken,
       Token fieldToken, String name, Encoding encoding) {
     if (typeToken.arrayLength() > 1) {
       return generatePrimitiveArrayDecoderJson(fieldToken, typeToken, name);
