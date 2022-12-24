@@ -8,7 +8,7 @@ import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.fields.Primi
 import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.fields.PrimitiveEncoderBasic;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.fields.PrimitiveEncoderConstant;
 
-public class EncoderField {
+public class FieldEncoder {
 
   public PrimitiveEncoderArray primitiveEncoderArray;
   public PrimitiveEncoderBasic primitiveEncoderBasic;

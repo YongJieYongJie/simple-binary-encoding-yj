@@ -67,7 +67,7 @@ import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.fields.Primi
 import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.fields.PrimitiveDecoderOptional;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.fields.PrimitiveDecoderRequired;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.fields.PrimitiveDecoderRequired.VersionAboveZero;
-import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.EncoderField;
+import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.FieldEncoder;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.GroupEncoder;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.VarDataEncoder;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.fields.BitSetEncoder;
@@ -103,25 +103,25 @@ public class RustGenerator implements CodeGenerator {
     this.outputManager = (RustOutputManager) outputManager;
   }
 
-  static List<EncoderField> generateEncoderFields(final List<Token> tokens) {
-    List<EncoderField> encoderFieldValues = new ArrayList<>();
+  static List<FieldEncoder> generateEncoderFields(final List<Token> tokens) {
+    List<FieldEncoder> fieldEncoderValues = new ArrayList<>();
     Generators.forEachField(
         tokens,
         (fieldToken, typeToken) -> {
           final String name = fieldToken.name();
           switch (typeToken.signal()) {
-            case ENCODING -> encoderFieldValues.add(generateEncoderFields_primitives(typeToken, name));
-            case BEGIN_ENUM -> encoderFieldValues.add(generateEnumEncoder(fieldToken, typeToken, name));
-            case BEGIN_SET -> encoderFieldValues.add(generateBitSetEncoder(typeToken, name));
-            case BEGIN_COMPOSITE -> encoderFieldValues.add(generateCompositeEncoder(typeToken, name));
+            case ENCODING -> fieldEncoderValues.add(generateEncoderFields_primitives(typeToken, name));
+            case BEGIN_ENUM -> fieldEncoderValues.add(generateEnumEncoder(fieldToken, typeToken, name));
+            case BEGIN_SET -> fieldEncoderValues.add(generateBitSetEncoder(typeToken, name));
+            case BEGIN_COMPOSITE -> fieldEncoderValues.add(generateCompositeEncoder(typeToken, name));
             default -> {
             }
           }
         });
-    return encoderFieldValues;
+    return fieldEncoderValues;
   }
 
-  private static EncoderField generateEncoderFields_primitives(Token typeToken, String name) {
+  private static FieldEncoder generateEncoderFields_primitives(Token typeToken, String name) {
     if (typeToken.arrayLength() > 1) {
       return generatePrimitiveEncoderJSONArray(typeToken, name);
     }
@@ -204,7 +204,7 @@ public class RustGenerator implements CodeGenerator {
     return varDataEncoderValues;
   }
 
-  private static EncoderField generatePrimitiveEncoderJSONArray(
+  private static FieldEncoder generatePrimitiveEncoderJSONArray(
       final Token typeToken, final String name) {
     final Encoding encoding = typeToken.encoding();
     final PrimitiveType primitiveType = encoding.primitiveType();
@@ -232,22 +232,22 @@ public class RustGenerator implements CodeGenerator {
       item.itemIndex = i;
       e.arrayItems.add(item);
     }
-    var wrapper = new EncoderField();
+    var wrapper = new FieldEncoder();
     wrapper.primitiveEncoderArray = e;
     return wrapper;
   }
 
-  private static EncoderField generatePrimitiveEncoderJSONConstant(
+  private static FieldEncoder generatePrimitiveEncoderJSONConstant(
       final Token typeToken, final String name) {
     assert typeToken.encoding().presence() == Encoding.Presence.CONSTANT;
     var e = new PrimitiveEncoderConstant();
     e.name = name;
-    var wrapper = new EncoderField();
+    var wrapper = new FieldEncoder();
     wrapper.primitiveEncoderConstant = e;
     return wrapper;
   }
 
-  private static EncoderField generatePrimitiveEncoderJSONBasic(
+  private static FieldEncoder generatePrimitiveEncoderJSONBasic(
       final Token typeToken, final String name) {
     final Encoding encoding = typeToken.encoding();
     final String rustPrimitiveType = rustTypeName(encoding.primitiveType());
@@ -262,17 +262,17 @@ public class RustGenerator implements CodeGenerator {
     e.encodedLength = typeToken.encodedLength();
     e.functionName = formatFunctionName(name);
     e.rustPrimitiveType = rustPrimitiveType;
-    var wrapper = new EncoderField();
+    var wrapper = new FieldEncoder();
     wrapper.primitiveEncoderBasic = e;
     return wrapper;
   }
 
-  private static EncoderField generateEnumEncoder(
+  private static FieldEncoder generateEnumEncoder(
       final Token fieldToken, final Token typeToken, final String name) {
     if (fieldToken.isConstantEncoding()) {
       var e = new EnumEncoderConstant();
       e.name = name;
-      var wrapper = new EncoderField();
+      var wrapper = new FieldEncoder();
       wrapper.enumEncoderConstant = e;
       return wrapper;
     }
@@ -281,30 +281,30 @@ public class RustGenerator implements CodeGenerator {
     e.functionName = formatFunctionName(name);
     e.enumType = formatStructName(typeToken.applicableTypeName());
     e.offset = typeToken.offset();
-    var wrapper = new EncoderField();
+    var wrapper = new FieldEncoder();
     wrapper.enumEncoderBasic = e;
     return wrapper;
   }
 
-  private static EncoderField generateBitSetEncoder(final Token bitsetToken, final String name)
+  private static FieldEncoder generateBitSetEncoder(final Token bitsetToken, final String name)
   {
     var e = new BitSetEncoder();
     e.functionName = formatFunctionName(name);
     e.structTypeName = formatStructName(bitsetToken.applicableTypeName());
     e.offset = bitsetToken.offset();
     e.rustPrimitiveType = rustTypeName(bitsetToken.encoding().primitiveType());
-    var wrapper = new EncoderField();
+    var wrapper = new FieldEncoder();
     wrapper.bitSetEncoder = e;
     return wrapper;
   }
 
-  private static EncoderField generateCompositeEncoder(
+  private static FieldEncoder generateCompositeEncoder(
       final Token typeToken, final String name) {
     var e = new CompositeEncoder();
     e.encoderFunctionName = toLowerSnakeCase(encoderName(name));
     e.encoderTypeName = encoderName(formatStructName(typeToken.name()));
     e.offset = typeToken.offset();
-    var wrapper = new EncoderField();
+    var wrapper = new FieldEncoder();
     wrapper.compositeEncoder = e;
     return wrapper;
   }
@@ -665,32 +665,32 @@ public class RustGenerator implements CodeGenerator {
     compositePojo.filename = codecModName(compositeName);
     compositePojo.encodedLength = tokens.get(0).encodedLength();
     compositePojo.encoderName = encoderName(compositeName);
-    compositePojo.encoderFields = generateCompositeFieldsEncoder(tokens);
+    compositePojo.fieldEncoders = generateCompositeFieldsEncoder(tokens);
     compositePojo.decoderName = decoderName(compositeName);
     compositePojo.fieldDecoders = generateCompositeFieldsDecoder(tokens);
     return compositePojo;
   }
 
-  private static List<EncoderField> generateCompositeFieldsEncoder(final List<Token> tokens) {
-    List<EncoderField> encoderFieldValues = new ArrayList<>();
+  private static List<FieldEncoder> generateCompositeFieldsEncoder(final List<Token> tokens) {
+    List<FieldEncoder> fieldEncoderValues = new ArrayList<>();
     for (int i = 1, end = tokens.size() - 1; i < end; ) {
       final Token encodingToken = tokens.get(i);
 
       var name = encodingToken.name();
       switch (encodingToken.signal()) {
-        case ENCODING -> encoderFieldValues.add(generatePrimitiveEncoder(encodingToken, name));
-        case BEGIN_ENUM -> encoderFieldValues.add(generateEnumEncoder(encodingToken, encodingToken, name));
-        case BEGIN_SET -> encoderFieldValues.add(generateBitSetEncoder(encodingToken, name));
-        case BEGIN_COMPOSITE -> encoderFieldValues.add(generateCompositeEncoder(encodingToken, name));
+        case ENCODING -> fieldEncoderValues.add(generatePrimitiveEncoder(encodingToken, name));
+        case BEGIN_ENUM -> fieldEncoderValues.add(generateEnumEncoder(encodingToken, encodingToken, name));
+        case BEGIN_SET -> fieldEncoderValues.add(generateBitSetEncoder(encodingToken, name));
+        case BEGIN_COMPOSITE -> fieldEncoderValues.add(generateCompositeEncoder(encodingToken, name));
         default -> {
         }
       }
       i += encodingToken.componentTokenCount();
     }
-    return encoderFieldValues;
+    return fieldEncoderValues;
   }
 
-  private static EncoderField generatePrimitiveEncoder(Token typeToken, String name) {
+  private static FieldEncoder generatePrimitiveEncoder(Token typeToken, String name) {
     if (typeToken.arrayLength() > 1) {
       return generatePrimitiveEncoderJSONArray(typeToken, name);
     }

@@ -37,9 +37,9 @@ pub mod encoder {
             self.parent.take().ok_or(SbeErr::ParentNotSet)
         }
 
-{{#encoderFields}}
+{{#fieldEncoders}}
         {{> encoder-fields}}
-{{/encoderFields}}
+{{/fieldEncoders}}
     }
 } // end encoder mod 
 
