@@ -19,6 +19,6 @@ public class SubGroupFormat {
   public List<VarDataEncoder> encoderVarData;
   public String groupToken; // Only for decoder
   public List<FieldDecoder> fieldDecoders;
-  public List<GroupDecoder> decoderGroups;
+  public List<GroupDecoder> groupDecoders;
   public List<VarDataDecoder> decoderVarData;
 }

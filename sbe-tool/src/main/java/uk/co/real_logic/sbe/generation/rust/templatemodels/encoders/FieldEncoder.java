@@ -41,7 +41,7 @@ public class FieldEncoder {
       public List<VarDataEncoder> encoderVarData;
       public List<SubGroupFormat> subgroups;
       public List<FieldDecoder> fieldDecoders;
-      public List<GroupDecoder> decoderGroups;
+      public List<GroupDecoder> groupDecoders;
       public List<VarDataDecoder> decoderVarData;
 
       // below only for decoder
