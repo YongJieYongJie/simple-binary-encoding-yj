@@ -31,24 +31,6 @@ public class FieldEncoder {
     public int offset;
   }
 
-  public static class EncoderDecoderFormat {
-
-      public String coderType;
-      public String bufType;
-      public String msgTypeName;
-      public List<FieldEncoder> fieldEncoders;
-      public List<GroupEncoder> groupEncoders;
-      public List<VarDataEncoder> varDataEncoders;
-      public List<GroupEncoderDecoderStruct> groupEncoderDecoders;
-      public List<FieldDecoder> fieldDecoders;
-      public List<GroupDecoder> groupDecoders;
-      public List<VarDataDecoder> varDataDecoders;
-
-      // below only for decoder
-      public String blockLengthType;
-      public String schemaVersionType;
-  }
-
   public static class EnumEncoderBasic {
 
     public String rustPrimitiveType;

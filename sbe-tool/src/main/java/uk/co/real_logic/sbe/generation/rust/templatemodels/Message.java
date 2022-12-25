@@ -1,7 +1,5 @@
 package uk.co.real_logic.sbe.generation.rust.templatemodels;
 
-import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.FieldEncoder.EncoderDecoderFormat;
-
 public class Message {
     public String blockLengthType;
     public int blockLength;
@@ -11,7 +9,7 @@ public class Message {
     public int schemaId;
     public String schemaVersionType;
     public int schemaVersion;
-    public EncoderDecoderFormat encoder;
-    public EncoderDecoderFormat decoder;
+    public EncoderDecoderStruct encoder;
+    public EncoderDecoderStruct decoder;
     public String filename;
 }

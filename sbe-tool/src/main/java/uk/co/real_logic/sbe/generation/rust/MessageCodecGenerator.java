@@ -27,7 +27,7 @@ import java.util.Set;
 import uk.co.real_logic.sbe.generation.rust.RustGenerator.CodecType;
 import uk.co.real_logic.sbe.generation.rust.RustGenerator.GroupContainer;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.GroupEncoderDecoderStruct;
-import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.FieldEncoder.EncoderDecoderFormat;
+import uk.co.real_logic.sbe.generation.rust.templatemodels.EncoderDecoderStruct;
 import uk.co.real_logic.sbe.ir.Ir;
 import uk.co.real_logic.sbe.ir.Token;
 
@@ -38,7 +38,7 @@ class MessageCodecGenerator implements GroupContainer
 
     MessageCodecGenerator() {}
 
-    EncoderDecoderFormat generate(
+    EncoderDecoderStruct generate(
         final List<Token> fields,
         final List<Token> groups,
         final List<Token> varData,
@@ -47,7 +47,7 @@ class MessageCodecGenerator implements GroupContainer
         final CodecType codecType
     )
     {
-        var messageValues = new EncoderDecoderFormat();
+        var messageValues = new EncoderDecoderStruct();
         messageValues.coderType = codecType.toString().toLowerCase();
 
         // i.e. <name>Decoder or <name>Encoder
@@ -99,7 +99,7 @@ class MessageCodecGenerator implements GroupContainer
         return groupGenerator;
     }
 
-    static EncoderDecoderFormat generateEncoder(
+    static EncoderDecoderStruct generateEncoder(
         final Ir ir,
         final Token msgToken,
         final List<Token> fields,
@@ -110,7 +110,7 @@ class MessageCodecGenerator implements GroupContainer
         return coderDef.generate(fields, groups, varData, ir, msgToken, Encoder);
     }
 
-    static EncoderDecoderFormat generateDecoder(
+    static EncoderDecoderStruct generateDecoder(
         final Ir ir,
         final Token msgToken,
         final List<Token> fields,
