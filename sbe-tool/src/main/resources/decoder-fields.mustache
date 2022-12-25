@@ -12,12 +12,12 @@ pub fn {{functionName}}(&self) -> {{&returnValue}} {
 /// characterEncoding: '{{characterEncoding}}'
 #[inline]
 pub fn {{functionName}}(&self) -> {{rustPrimitiveType}} {
-    {{#versionAboveZero}}
+    {{#versionGreaterThanZero}}
     if self.acting_version < {{version}} {
         return {{rustLiteral}};
     }
 
-    {{/versionAboveZero}}
+    {{/versionGreaterThanZero}}
     self.get_buf().get_{{rustPrimitiveType}}_at(self.offset + {{offset}})
 }
 

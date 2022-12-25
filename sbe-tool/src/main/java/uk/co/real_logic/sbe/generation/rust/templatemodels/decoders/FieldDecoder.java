@@ -93,22 +93,15 @@ public class FieldDecoder {
     public boolean versionGreaterThanZero;
   }
 
-  public static class PrimitiveDecoderRequired { // Only for decoder
+  public static class PrimitiveDecoderRequired {
 
-    public String applicableNullValue;
     public String characterEncoding;
-    public String functionName;
     public String rustPrimitiveType;
+    public String functionName;
+    public boolean versionGreaterThanZero;
     public int version;
+    public String rustLiteral;
     public int offset;
 
-    public VersionAboveZero versionAboveZero;
-
-    public static class VersionAboveZero {
-
-      public int version;
-      public String rustLiteral;
-      public String applicableNullValue;
-    }
   }
 }

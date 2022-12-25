@@ -66,7 +66,6 @@ import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.FieldDecoder
 import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.FieldDecoder.PrimitiveDecoderConstant;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.FieldDecoder.PrimitiveDecoderOptional;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.FieldDecoder.PrimitiveDecoderRequired;
-import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.FieldDecoder.PrimitiveDecoderRequired.VersionAboveZero;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.FieldEncoder;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.GroupEncoder;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.VarDataEncoder;
@@ -455,12 +454,9 @@ public class RustGenerator implements CodeGenerator {
     e.characterEncoding = encoding.characterEncoding();
     e.functionName = formatFunctionName(name);
     e.rustPrimitiveType = rustTypeName(encoding.primitiveType());
-    if (fieldToken.version() > 0) {
-      e.versionAboveZero = new VersionAboveZero();
-      e.versionAboveZero.version = fieldToken.version();
-      e.versionAboveZero.rustLiteral = generateRustLiteral(encoding.primitiveType(), encoding.applicableNullValue().toString());
-      e.versionAboveZero.applicableNullValue = encoding.applicableNullValue().toString();
-    }
+    e.versionGreaterThanZero = fieldToken.version() > 0;
+    e.version = fieldToken.version();
+    e.rustLiteral = generateRustLiteral(encoding.primitiveType(), encoding.applicableNullValue().toString());
     e.offset = fieldToken.offset();
     var wrapper = new FieldDecoder();
     wrapper.primitiveDecoderRequired = e;
