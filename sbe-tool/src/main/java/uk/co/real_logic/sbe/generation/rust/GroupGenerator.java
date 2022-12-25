@@ -25,26 +25,26 @@ import uk.co.real_logic.sbe.generation.rust.RustGenerator.SubGroupContainer;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.SubGroupFormat;
 import uk.co.real_logic.sbe.ir.Token;
 
-class SubGroup implements SubGroupContainer
+class GroupGenerator implements SubGroupContainer
 {
 
-    public final List<SubGroup> subGroups = new ArrayList<>();
+    public final List<GroupGenerator> groupGenerators = new ArrayList<>();
     private final String name;
     private final Token groupToken;
     public SubGroupFormat subGroupValue;
 
-    SubGroup(final String name, final Token groupToken)
+    GroupGenerator(final String name, final Token groupToken)
     {
         this.name = name;
         this.groupToken = groupToken;
     }
 
-    public SubGroup addSubGroup(final String name, final Token groupToken)
+    public GroupGenerator addSubGroup(final String name, final Token groupToken)
     {
-        final SubGroup subGroup = new SubGroup(name, groupToken);
-        subGroups.add(subGroup);
+        final GroupGenerator groupGenerator = new GroupGenerator(name, groupToken);
+        groupGenerators.add(groupGenerator);
 
-        return subGroup;
+        return groupGenerator;
     }
 
     void generateEncoder(

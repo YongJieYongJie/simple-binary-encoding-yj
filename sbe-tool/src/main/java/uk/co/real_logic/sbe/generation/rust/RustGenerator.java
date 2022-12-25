@@ -165,8 +165,8 @@ public class RustGenerator implements CodeGenerator {
       e.groupTypeName = groupName;
       e.groupName = toLowerSnakeCase(groupName);
 
-      final SubGroup subGroup = parentElement.addSubGroup(groupName, groupToken);
-      subGroup.generateEncoder(tokens, fields, groups, varData, index);
+      final GroupGenerator groupGenerator = parentElement.addSubGroup(groupName, groupToken);
+      groupGenerator.generateEncoder(tokens, fields, groups, varData, index);
 
       groupEncoderValues.add(e);
     }
@@ -527,8 +527,8 @@ public class RustGenerator implements CodeGenerator {
       final String groupName = decoderName(formatStructName(groupToken.name()));
       assert 4 == groupHeaderTokenCount;
 
-      final SubGroup subGroup = parentElement.addSubGroup(groupName, groupToken);
-      subGroup.generateDecoder(tokens, fields, groups, varData, index);
+      final GroupGenerator groupGenerator = parentElement.addSubGroup(groupName, groupToken);
+      groupGenerator.generateDecoder(tokens, fields, groups, varData, index);
 
       var groupDecoder = new GroupDecoder();
       groupDecoder.functionName = formatFunctionName(groupName);
@@ -860,6 +860,6 @@ public class RustGenerator implements CodeGenerator {
    * generated.
    * */
   interface SubGroupContainer {
-    SubGroup addSubGroup(String name, Token groupToken);
+    GroupGenerator addSubGroup(String name, Token groupToken);
   }
 }

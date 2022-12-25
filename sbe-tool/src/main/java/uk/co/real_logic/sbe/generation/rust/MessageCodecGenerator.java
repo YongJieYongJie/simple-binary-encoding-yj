@@ -34,7 +34,7 @@ import uk.co.real_logic.sbe.ir.Token;
 class MessageCodecGenerator implements SubGroupContainer
 {
 
-    private final List<SubGroup> subGroups = new ArrayList<>();
+    private final List<GroupGenerator> groupGenerators = new ArrayList<>();
 
     MessageCodecGenerator() {}
 
@@ -73,30 +73,30 @@ class MessageCodecGenerator implements SubGroupContainer
 
         // Unwrap subgroups in a breadth-first manner (i.e., groups that are generated directly by the
         // message will be processed first, followed by any subgroups these initial groups generates.
-        List<SubGroup> nextSubGroups = new ArrayList<>();
+        List<GroupGenerator> nextGroupGenerators = new ArrayList<>();
         Set<String> alreadyAdded = new HashSet<>();
-        while (!subGroups.isEmpty()) {
-            for (SubGroup subGroup : subGroups) {
-                if (subGroup.subGroupValue == null) continue;
-                if (alreadyAdded.contains(subGroup.subGroupValue.name)) continue;
-                alreadyAdded.add(subGroup.subGroupValue.name);
-                subGroupValues.add(subGroup.subGroupValue);
-                nextSubGroups.addAll(subGroup.subGroups);
+        while (!groupGenerators.isEmpty()) {
+            for (GroupGenerator groupGenerator : groupGenerators) {
+                if (groupGenerator.subGroupValue == null) continue;
+                if (alreadyAdded.contains(groupGenerator.subGroupValue.name)) continue;
+                alreadyAdded.add(groupGenerator.subGroupValue.name);
+                subGroupValues.add(groupGenerator.subGroupValue);
+                nextGroupGenerators.addAll(groupGenerator.groupGenerators);
             }
-            subGroups.clear();
-            subGroups.addAll(nextSubGroups);
-            nextSubGroups.clear();
+            groupGenerators.clear();
+            groupGenerators.addAll(nextGroupGenerators);
+            nextGroupGenerators.clear();
         }
         messageValues.subgroups = subGroupValues;
 
         return messageValues;
     }
 
-    public SubGroup addSubGroup(final String name, final Token groupToken)
+    public GroupGenerator addSubGroup(final String name, final Token groupToken)
     {
-        final SubGroup subGroup = new SubGroup(name, groupToken);
-        subGroups.add(subGroup);
-        return subGroup;
+        final GroupGenerator groupGenerator = new GroupGenerator(name, groupToken);
+        groupGenerators.add(groupGenerator);
+        return groupGenerator;
     }
 
     static EncoderDecoderFormat generateEncoder(
