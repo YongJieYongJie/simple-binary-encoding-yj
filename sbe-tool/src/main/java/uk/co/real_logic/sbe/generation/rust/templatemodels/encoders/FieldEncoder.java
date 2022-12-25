@@ -38,7 +38,7 @@ public class FieldEncoder {
       public String msgTypeName;
       public List<FieldEncoder> fieldEncoders;
       public List<GroupEncoder> groupEncoders;
-      public List<VarDataEncoder> encoderVarData;
+      public List<VarDataEncoder> varDataEncoders;
       public List<SubGroupFormat> subgroups;
       public List<FieldDecoder> fieldDecoders;
       public List<GroupDecoder> groupDecoders;

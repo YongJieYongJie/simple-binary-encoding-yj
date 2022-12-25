@@ -64,7 +64,7 @@ class SubGroup implements SubGroupContainer
         subGroupPojo.encodedLength = this.groupToken.encodedLength();
         subGroupPojo.fieldEncoders = RustGenerator.generateEncoderFields(fields);
         subGroupPojo.groupEncoders = RustGenerator.generateEncoderGroups(groups, this);
-        subGroupPojo.encoderVarData = RustGenerator.generateEncoderVarData(varData);
+        subGroupPojo.varDataEncoders = RustGenerator.generateEncoderVarData(varData);
         subGroupValue = subGroupPojo;
     }
 
