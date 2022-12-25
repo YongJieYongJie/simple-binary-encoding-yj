@@ -21,17 +21,17 @@ import java.util.ArrayList;
 import java.util.List;
 import uk.co.real_logic.sbe.PrimitiveType;
 import uk.co.real_logic.sbe.generation.Generators;
-import uk.co.real_logic.sbe.generation.rust.RustGenerator.SubGroupContainer;
-import uk.co.real_logic.sbe.generation.rust.templatemodels.SubGroupFormat;
+import uk.co.real_logic.sbe.generation.rust.RustGenerator.GroupContainer;
+import uk.co.real_logic.sbe.generation.rust.templatemodels.GroupEncoderDecoderStruct;
 import uk.co.real_logic.sbe.ir.Token;
 
-class GroupGenerator implements SubGroupContainer
+class GroupGenerator implements GroupContainer
 {
 
     public final List<GroupGenerator> groupGenerators = new ArrayList<>();
     private final String name;
     private final Token groupToken;
-    public SubGroupFormat subGroupValue;
+    public GroupEncoderDecoderStruct innerGroup;
 
     GroupGenerator(final String name, final Token groupToken)
     {
@@ -39,7 +39,11 @@ class GroupGenerator implements SubGroupContainer
         this.groupToken = groupToken;
     }
 
-    public GroupGenerator addSubGroup(final String name, final Token groupToken)
+    public boolean hasInnerGroup() {
+        return innerGroup != null;
+    }
+
+    public GroupGenerator addInnerGroup(final String name, final Token groupToken)
     {
         final GroupGenerator groupGenerator = new GroupGenerator(name, groupToken);
         groupGenerators.add(groupGenerator);
@@ -53,7 +57,7 @@ class GroupGenerator implements SubGroupContainer
         final List<Token> groups,
         final List<Token> varData,
         final int index) {
-        var subGroupPojo = new SubGroupFormat();
+        var subGroupPojo = new GroupEncoderDecoderStruct();
         final Token blockLengthToken = Generators.findFirst("blockLength", tokens, index);
         final Token numInGroupToken = Generators.findFirst("numInGroup", tokens, index);
         subGroupPojo.numInGroupPrimitiveType = rustTypeName(numInGroupToken.encoding().primitiveType());
@@ -65,7 +69,7 @@ class GroupGenerator implements SubGroupContainer
         subGroupPojo.fieldEncoders = RustGenerator.generateEncoderFields(fields);
         subGroupPojo.groupEncoders = RustGenerator.generateEncoderGroups(groups, this);
         subGroupPojo.varDataEncoders = RustGenerator.generateEncoderVarData(varData);
-        subGroupValue = subGroupPojo;
+        innerGroup = subGroupPojo;
     }
 
     void generateDecoder(
@@ -75,7 +79,7 @@ class GroupGenerator implements SubGroupContainer
         final List<Token> varData,
         final int index)
     {
-        var subGroupPojo = new SubGroupFormat();
+        var subGroupPojo = new GroupEncoderDecoderStruct();
         final Token blockLengthToken = Generators.findFirst("blockLength", tokens, index);
         final PrimitiveType blockLengthPrimitiveType = blockLengthToken.encoding().primitiveType();
 
@@ -93,6 +97,6 @@ class GroupGenerator implements SubGroupContainer
         subGroupPojo.fieldDecoders = RustGenerator.generateDecoderFields(fields);
         subGroupPojo.groupDecoders = RustGenerator.generateDecoderGroups(groups, this);
         subGroupPojo.varDataDecoders = RustGenerator.generateDecoderVarData(varData, true);
-        subGroupValue = subGroupPojo;
+        innerGroup = subGroupPojo;
     }
 }

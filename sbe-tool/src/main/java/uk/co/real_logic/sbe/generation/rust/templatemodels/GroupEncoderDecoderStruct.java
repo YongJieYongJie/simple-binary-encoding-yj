@@ -7,7 +7,7 @@ import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.VarDataDecod
 import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.FieldEncoder;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.VarDataEncoder;
 
-public class SubGroupFormat {
+public class GroupEncoderDecoderStruct {
   public String numInGroupPrimitiveType;
   public String name;
   public int dimensionHeaderSize;

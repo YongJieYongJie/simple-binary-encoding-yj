@@ -1,7 +1,7 @@
 package uk.co.real_logic.sbe.generation.rust.templatemodels.encoders;
 
 import java.util.List;
-import uk.co.real_logic.sbe.generation.rust.templatemodels.SubGroupFormat;
+import uk.co.real_logic.sbe.generation.rust.templatemodels.GroupEncoderDecoderStruct;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.FieldDecoder;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.GroupDecoder;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.VarDataDecoder;
@@ -39,7 +39,7 @@ public class FieldEncoder {
       public List<FieldEncoder> fieldEncoders;
       public List<GroupEncoder> groupEncoders;
       public List<VarDataEncoder> varDataEncoders;
-      public List<SubGroupFormat> subgroups;
+      public List<GroupEncoderDecoderStruct> groupEncoderDecoders;
       public List<FieldDecoder> fieldDecoders;
       public List<GroupDecoder> groupDecoders;
       public List<VarDataDecoder> varDataDecoders;

@@ -25,13 +25,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import uk.co.real_logic.sbe.generation.rust.RustGenerator.CodecType;
-import uk.co.real_logic.sbe.generation.rust.RustGenerator.SubGroupContainer;
-import uk.co.real_logic.sbe.generation.rust.templatemodels.SubGroupFormat;
+import uk.co.real_logic.sbe.generation.rust.RustGenerator.GroupContainer;
+import uk.co.real_logic.sbe.generation.rust.templatemodels.GroupEncoderDecoderStruct;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.FieldEncoder.EncoderDecoderFormat;
 import uk.co.real_logic.sbe.ir.Ir;
 import uk.co.real_logic.sbe.ir.Token;
 
-class MessageCodecGenerator implements SubGroupContainer
+class MessageCodecGenerator implements GroupContainer
 {
 
     private final List<GroupGenerator> groupGenerators = new ArrayList<>();
@@ -69,7 +69,7 @@ class MessageCodecGenerator implements SubGroupContainer
             messageValues.varDataEncoders = RustGenerator.generateEncoderVarData(varData);
         }
 
-        List<SubGroupFormat> subGroupValues = new ArrayList<>();
+        List<GroupEncoderDecoderStruct> innerGroups = new ArrayList<>();
 
         // Unwrap subgroups in a breadth-first manner (i.e., groups that are generated directly by the
         // message will be processed first, followed by any subgroups these initial groups generates.
@@ -77,22 +77,22 @@ class MessageCodecGenerator implements SubGroupContainer
         Set<String> alreadyAdded = new HashSet<>();
         while (!groupGenerators.isEmpty()) {
             for (GroupGenerator groupGenerator : groupGenerators) {
-                if (groupGenerator.subGroupValue == null) continue;
-                if (alreadyAdded.contains(groupGenerator.subGroupValue.name)) continue;
-                alreadyAdded.add(groupGenerator.subGroupValue.name);
-                subGroupValues.add(groupGenerator.subGroupValue);
+                if (!groupGenerator.hasInnerGroup()) continue;
+                if (alreadyAdded.contains(groupGenerator.innerGroup.name)) continue;
+                alreadyAdded.add(groupGenerator.innerGroup.name);
+                innerGroups.add(groupGenerator.innerGroup);
                 nextGroupGenerators.addAll(groupGenerator.groupGenerators);
             }
             groupGenerators.clear();
             groupGenerators.addAll(nextGroupGenerators);
             nextGroupGenerators.clear();
         }
-        messageValues.subgroups = subGroupValues;
+        messageValues.groupEncoderDecoders = innerGroups;
 
         return messageValues;
     }
 
-    public GroupGenerator addSubGroup(final String name, final Token groupToken)
+    public GroupGenerator addInnerGroup(final String name, final Token groupToken)
     {
         final GroupGenerator groupGenerator = new GroupGenerator(name, groupToken);
         groupGenerators.add(groupGenerator);

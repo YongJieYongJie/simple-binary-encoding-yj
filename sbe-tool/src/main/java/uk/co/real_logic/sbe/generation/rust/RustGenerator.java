@@ -132,7 +132,7 @@ public class RustGenerator implements CodeGenerator {
   }
 
   static List<GroupEncoder> generateEncoderGroups(
-      final List<Token> tokens, final SubGroupContainer parentElement) {
+      final List<Token> tokens, final GroupContainer parentElement) {
     List<GroupEncoder> groupEncoderValues = new ArrayList<>();
     for (int i = 0, size = tokens.size(); i < size; i++) {
       var e = new GroupEncoder();
@@ -165,7 +165,7 @@ public class RustGenerator implements CodeGenerator {
       e.groupTypeName = groupName;
       e.groupName = toLowerSnakeCase(groupName);
 
-      final GroupGenerator groupGenerator = parentElement.addSubGroup(groupName, groupToken);
+      final GroupGenerator groupGenerator = parentElement.addInnerGroup(groupName, groupToken);
       groupGenerator.generateEncoder(tokens, fields, groups, varData, index);
 
       groupEncoderValues.add(e);
@@ -501,7 +501,7 @@ public class RustGenerator implements CodeGenerator {
   }
 
   static List<GroupDecoder> generateDecoderGroups(
-      final List<Token> tokens, final SubGroupContainer parentElement)
+      final List<Token> tokens, final GroupContainer parentElement)
       {
     List<GroupDecoder> groupDecoders = new ArrayList<>();
     for (int i = 0, size = tokens.size(); i < size; i++) {
@@ -527,7 +527,7 @@ public class RustGenerator implements CodeGenerator {
       final String groupName = decoderName(formatStructName(groupToken.name()));
       assert 4 == groupHeaderTokenCount;
 
-      final GroupGenerator groupGenerator = parentElement.addSubGroup(groupName, groupToken);
+      final GroupGenerator groupGenerator = parentElement.addInnerGroup(groupName, groupToken);
       groupGenerator.generateDecoder(tokens, fields, groups, varData, index);
 
       var groupDecoder = new GroupDecoder();
@@ -855,11 +855,12 @@ public class RustGenerator implements CodeGenerator {
   }
 
   /**
-   * Classes implementing this interface potentially contains SBE groups. Code
-   * for such groups need to be generated after the main body of the class is
-   * generated.
-   * */
-  interface SubGroupContainer {
-    GroupGenerator addSubGroup(String name, Token groupToken);
+   * Generator classes for SBE types that can contain inner groups (i.e. message and group) must
+   * implement this interface. Code for such inner groups need to be generated after the other
+   * fields in the main SBE type is generated, so we use the `addInnerGroup` method on this
+   * interface to add the inner groups first, and generate later.
+   */
+  interface GroupContainer {
+    GroupGenerator addInnerGroup(String name, Token groupToken);
   }
 }

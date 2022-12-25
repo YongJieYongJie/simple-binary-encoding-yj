@@ -74,7 +74,7 @@ pub mod encoder {
 {{/varDataEncoders}}
     }
 
-    {{#subgroups}}
+    {{#groupEncoderDecoders}}
     #[derive(Debug, Default)]
     pub struct {{name}}<P> {
         parent: Option<P>,
@@ -164,7 +164,7 @@ pub mod encoder {
 {{/varDataEncoders}}
     }
 
-    {{/subgroups}}
+    {{/groupEncoderDecoders}}
 } // end encoder
 
 {{/encoder}}
@@ -248,7 +248,7 @@ pub mod decoder {
 {{/varDataDecoders}}
     }
 
-    {{#subgroups}}
+    {{#groupEncoderDecoders}}
     #[derive(Debug, Default)]
     pub struct {{name}}<P> {
         parent: Option<P>,
@@ -335,7 +335,7 @@ pub mod decoder {
 {{/varDataDecoders}}
     }
 
-    {{/subgroups}}
+    {{/groupEncoderDecoders}}
 {{/decoder}}
 } // end decoder
 
