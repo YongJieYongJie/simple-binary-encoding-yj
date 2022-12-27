@@ -1,7 +1,22 @@
 /// GROUP DECODER
+{{#versionGreaterThanZero}}
+#[inline]
+pub fn {{functionName}}(self) -> Option<{{groupName}}<Self>> {
+    if acting_version < {{version}} {
+        return None;
+    }
+
+    let acting_version = self.acting_version;
+    Some({{groupName}}::default().wrap(self, acting_version as usize));
+
+}
+
+{{/versionGreaterThanZero}}
+{{^versionGreaterThanZero}}
 #[inline]
 pub fn {{functionName}}(self) -> {{groupName}}<Self> {
     let acting_version = self.acting_version;
     {{groupName}}::default().wrap(self, acting_version as usize)
 }
 
+{{/versionGreaterThanZero}}

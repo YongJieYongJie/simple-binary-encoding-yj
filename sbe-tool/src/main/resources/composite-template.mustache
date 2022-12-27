@@ -3,8 +3,10 @@ use crate::*;
 pub use encoder::*;
 pub use decoder::*;
 
+{{#encodedLengthGreaterThanZero}}
 pub const ENCODED_LENGTH: usize = {{encodedLength}};
 
+{{/encodedLengthGreaterThanZero}}
 pub mod encoder {
     use super::*;
 

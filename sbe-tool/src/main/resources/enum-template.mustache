@@ -1,5 +1,5 @@
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[repr(u8)]
+#[repr({{primitiveType}})]
 pub enum {{enumRustName}} {
 {{#enumItems}}
     {{name}} = {{literal}},
@@ -11,9 +11,9 @@ impl Default for {{enumRustName}} {
     fn default() -> Self { {{enumRustName}}::NullVal }
 }
 
-impl From<u8> for {{enumRustName}} {
+impl From<{{primitiveType}}> for {{enumRustName}} {
     #[inline]
-    fn from(v: u8) -> Self {
+    fn from(v: {{primitiveType}}) -> Self {
         match v {
         {{#enumFromItems}}
             {{literal}} => Self::{{name}},

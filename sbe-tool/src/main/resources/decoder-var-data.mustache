@@ -28,6 +28,12 @@ pub fn {{propertyName}}_decoder(&mut self) -> (usize, usize) {
 
 #[inline]
 pub fn {{propertyName}}_slice(&'a self, coordinates: (usize, usize)) -> &'a [u8] {
+    {{#versionGreaterThanZero}}
+    if self.acting_version < {{version}} {
+        return &[] as &[u8];
+    }
+
+    {{/versionGreaterThanZero}}
     debug_assert!(self.get_limit() >= coordinates.0 + coordinates.1);
     self.get_buf().get_slice_at(coordinates.0, coordinates.1)
 }

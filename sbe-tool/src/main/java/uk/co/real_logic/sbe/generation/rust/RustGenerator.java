@@ -369,10 +369,9 @@ public class RustGenerator implements CodeGenerator {
     e.rustPrimitiveType = rustPrimitiveType;
     e.arrayLength = arrayLength;
 
-    if (fieldToken.version() > 0) {
-      e.version = fieldToken.version();
-      e.applicableNullValue = encoding.applicableNullValue().toString();
-    }
+    e.versionGreaterThanZero = fieldToken.version() > 0;
+    e.version = fieldToken.version();
+    e.applicableNullValue = encoding.applicableNullValue().toString();
 
     List<PrimitiveDecoderArray.ArrayItems> arrayItems = new ArrayList<>();
     for (int i = 0; i < arrayLength; i++) {
@@ -527,6 +526,7 @@ public class RustGenerator implements CodeGenerator {
       groupGenerator.generateDecoder(tokens, fields, groups, varData, index);
 
       var groupDecoder = new GroupDecoder();
+      groupDecoder.versionGreaterThanZero = groupToken.version() > 0;
       groupDecoder.functionName = formatFunctionName(groupName);
       groupDecoder.groupName = groupName;
       groupDecoder.version = groupToken.version();
@@ -536,11 +536,11 @@ public class RustGenerator implements CodeGenerator {
   }
 
   static List<VarDataDecoder> generateDecoderVarData(
-      final List<Token> tokens, final boolean isSubGroup) {
+      final List<Token> tokens, final boolean isNestedGroup) {
     List<VarDataDecoder> varDataDecoders = new ArrayList<>();
     for (int i = 0, size = tokens.size(); i < size; ) {
       var varDataPojo = new VarDataDecoder();
-      varDataPojo.isSubGroup = isSubGroup;
+      varDataPojo.isNestedGroup = isNestedGroup;
       final Token varDataToken = tokens.get(i);
       if (varDataToken.signal() != Signal.BEGIN_VAR_DATA) {
         throw new IllegalStateException(
@@ -660,6 +660,7 @@ public class RustGenerator implements CodeGenerator {
 
     compositePojo.filename = codecModName(compositeName);
     compositePojo.encodedLength = tokens.get(0).encodedLength();
+    compositePojo.encodedLengthGreaterThanZero = compositePojo.encodedLength > 0;
     compositePojo.encoderName = encoderName(compositeName);
     compositePojo.fieldEncoders = generateCompositeFieldsEncoder(tokens);
     compositePojo.decoderName = decoderName(compositeName);

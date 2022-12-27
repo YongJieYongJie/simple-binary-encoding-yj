@@ -10,8 +10,6 @@ import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.VarDataEncod
 
 public class EncoderDecoderStruct {
 
-  public String coderType;
-  public String bufType;
   public String msgTypeName;
   public List<FieldEncoder> fieldEncoders;
   public List<GroupEncoder> groupEncoders;

@@ -50,6 +50,12 @@ pub fn {{functionName}}(&self) -> Option<{{rustPrimitiveType}}> {
 {{#primitiveDecoderArray}}
 #[inline]
 pub fn {{functionName}}(&self) -> [{{rustPrimitiveType}}; {{arrayLength}}] {
+    {{#versionGreaterThanZero}}
+    if self.acting_version < {{version}} {
+        return [{{applicableNullValue}}, arrayLength];
+    }
+
+    {{/versionGreaterThanZero}}
     let buf = self.get_buf();
     [
     {{#arrayItems}}

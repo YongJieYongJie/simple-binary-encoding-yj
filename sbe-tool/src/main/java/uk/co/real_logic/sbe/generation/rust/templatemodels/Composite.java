@@ -7,8 +7,9 @@ import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.FieldEncoder
 
 public class Composite {
     public String filename;
-    public String encoderName;
+    public boolean encodedLengthGreaterThanZero;
     public int encodedLength;
+    public String encoderName;
     public List<FieldEncoder> fieldEncoders;
 
     public String decoderName;

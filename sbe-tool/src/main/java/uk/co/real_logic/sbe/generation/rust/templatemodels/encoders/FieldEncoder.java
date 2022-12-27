@@ -33,10 +33,10 @@ public class FieldEncoder {
 
   public static class EnumEncoderBasic {
 
-    public String rustPrimitiveType;
     public String functionName;
     public String enumType;
     public int offset;
+    public String rustPrimitiveType;
 
   }
 
@@ -47,7 +47,7 @@ public class FieldEncoder {
 
   public static class PrimitiveEncoderArray {
 
-    public String encoding;
+    public String name;
     public String applicableMinValue;
     public String applicableMaxValue;
     public String applicableNullValue;
@@ -60,7 +60,6 @@ public class FieldEncoder {
     public String rustPrimitiveType;
     public int arrayLength;
     public List<ArrayItems> arrayItems;
-    public String name;
 
     public static class ArrayItems {
 
@@ -73,7 +72,6 @@ public class FieldEncoder {
   public static class PrimitiveEncoderBasic {
 
     public String name;
-    public String encoding;
     public String applicableMinValue;
     public String applicableMaxValue;
     public String applicableNullValue;

@@ -4,10 +4,9 @@ public class VarDataDecoder {
 
   public String characterEncoding;
   public String propertyName;
+  public boolean isNestedGroup;
+  public boolean versionGreaterThanZero;
+  public int version;
   public int lengthTypeSize;
   public String lengthType;
-  public int version;
-
-  public boolean isSubGroup;
-  public boolean versionGreaterThanZero;
 }

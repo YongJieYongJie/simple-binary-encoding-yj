@@ -48,11 +48,9 @@ class MessageCodecGenerator implements GroupContainer
     )
     {
         var messageValues = new EncoderDecoderStruct();
-        messageValues.coderType = codecType.toString().toLowerCase();
 
         // i.e. <name>Decoder or <name>Encoder
         messageValues.msgTypeName = formatStructName(msgToken.name()) + codecType.name();
-        messageValues.bufType = codecType.bufType();
         messageValues.blockLengthType = rustTypeName(ir.headerStructure().blockLengthType());
         messageValues.schemaVersionType = rustTypeName(ir.headerStructure().schemaVersionType());
 
