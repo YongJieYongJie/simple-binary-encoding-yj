@@ -1,5 +1,5 @@
 /// GROUP DECODER
-{{#versionGreaterThanZero}}
+{{#versionAboveZero}}
 #[inline]
 pub fn {{functionName}}(self) -> Option<{{groupName}}<Self>> {
     if acting_version < {{version}} {
@@ -11,12 +11,12 @@ pub fn {{functionName}}(self) -> Option<{{groupName}}<Self>> {
 
 }
 
-{{/versionGreaterThanZero}}
-{{^versionGreaterThanZero}}
+{{/versionAboveZero}}
+{{^versionAboveZero}}
 #[inline]
 pub fn {{functionName}}(self) -> {{groupName}}<Self> {
     let acting_version = self.acting_version;
     {{groupName}}::default().wrap(self, acting_version as usize)
 }
 
-{{/versionGreaterThanZero}}
+{{/versionAboveZero}}

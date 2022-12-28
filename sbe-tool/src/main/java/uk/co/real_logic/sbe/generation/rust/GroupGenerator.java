@@ -57,19 +57,19 @@ class GroupGenerator implements GroupContainer
         final List<Token> groups,
         final List<Token> varData,
         final int index) {
-        var subGroupPojo = new GroupEncoderDecoderStruct();
+        var groupEncoderStruct = new GroupEncoderDecoderStruct();
         final Token blockLengthToken = Generators.findFirst("blockLength", tokens, index);
         final Token numInGroupToken = Generators.findFirst("numInGroup", tokens, index);
-        subGroupPojo.numInGroupPrimitiveType = rustTypeName(numInGroupToken.encoding().primitiveType());
-        subGroupPojo.name = name;
-        subGroupPojo.dimensionHeaderSize = tokens.get(index).encodedLength();
-        subGroupPojo.blockLengthPrimitiveType = rustTypeName(blockLengthToken.encoding().primitiveType());
-        subGroupPojo.offset = numInGroupToken.offset();
-        subGroupPojo.encodedLength = this.groupToken.encodedLength();
-        subGroupPojo.fieldEncoders = RustGenerator.generateEncoderFields(fields);
-        subGroupPojo.groupEncoders = RustGenerator.generateEncoderGroups(groups, this);
-        subGroupPojo.varDataEncoders = RustGenerator.generateEncoderVarData(varData);
-        innerGroup = subGroupPojo;
+        groupEncoderStruct.numInGroupPrimitiveType = rustTypeName(numInGroupToken.encoding().primitiveType());
+        groupEncoderStruct.name = name;
+        groupEncoderStruct.dimensionHeaderSize = tokens.get(index).encodedLength();
+        groupEncoderStruct.blockLengthPrimitiveType = rustTypeName(blockLengthToken.encoding().primitiveType());
+        groupEncoderStruct.offset = numInGroupToken.offset();
+        groupEncoderStruct.encodedLength = this.groupToken.encodedLength();
+        groupEncoderStruct.fieldEncoders = RustGenerator.generateEncoderFields(fields);
+        groupEncoderStruct.groupEncoders = RustGenerator.generateEncoderGroups(groups, this);
+        groupEncoderStruct.varDataEncoders = RustGenerator.generateEncoderVarData(varData);
+        innerGroup = groupEncoderStruct;
     }
 
     void generateDecoder(
@@ -79,24 +79,24 @@ class GroupGenerator implements GroupContainer
         final List<Token> varData,
         final int index)
     {
-        var subGroupPojo = new GroupEncoderDecoderStruct();
+        var groupDecoderStruct = new GroupEncoderDecoderStruct();
         final Token blockLengthToken = Generators.findFirst("blockLength", tokens, index);
         final PrimitiveType blockLengthPrimitiveType = blockLengthToken.encoding().primitiveType();
 
         final Token numInGroupToken = Generators.findFirst("numInGroup", tokens, index);
         final PrimitiveType numInGroupPrimitiveType = numInGroupToken.encoding().primitiveType();
 
-        subGroupPojo.numInGroupPrimitiveType = rustTypeName(numInGroupPrimitiveType);
-        subGroupPojo.name = name;
-        subGroupPojo.dimensionHeaderSize = tokens.get(index).encodedLength();
+        groupDecoderStruct.numInGroupPrimitiveType = rustTypeName(numInGroupPrimitiveType);
+        groupDecoderStruct.name = name;
+        groupDecoderStruct.dimensionHeaderSize = tokens.get(index).encodedLength();
 
-        subGroupPojo.blockLengthPrimitiveType = rustTypeName(blockLengthPrimitiveType);
-        subGroupPojo.offset = numInGroupToken.offset();
-        subGroupPojo.groupToken = groupToken.toString();
+        groupDecoderStruct.blockLengthPrimitiveType = rustTypeName(blockLengthPrimitiveType);
+        groupDecoderStruct.offset = numInGroupToken.offset();
+        groupDecoderStruct.groupToken = groupToken.toString();
 
-        subGroupPojo.fieldDecoders = RustGenerator.generateDecoderFields(fields);
-        subGroupPojo.groupDecoders = RustGenerator.generateDecoderGroups(groups, this);
-        subGroupPojo.varDataDecoders = RustGenerator.generateDecoderVarData(varData, true);
-        innerGroup = subGroupPojo;
+        groupDecoderStruct.fieldDecoders = RustGenerator.generateDecoderFields(fields);
+        groupDecoderStruct.groupDecoders = RustGenerator.generateDecoderGroups(groups, this);
+        groupDecoderStruct.varDataDecoders = RustGenerator.generateDecoderVarData(varData, true);
+        innerGroup = groupDecoderStruct;
     }
 }

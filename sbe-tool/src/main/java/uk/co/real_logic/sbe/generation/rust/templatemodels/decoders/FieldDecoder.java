@@ -4,86 +4,86 @@ import java.util.List;
 
 public class FieldDecoder {
 
-  public PrimitiveDecoderRequired primitiveDecoderRequired;
-  public PrimitiveDecoderOptional primitiveDecoderOptional;
-  public PrimitiveDecoderConstant primitiveDecoderConstant;
-  public PrimitiveDecoderArray primitiveDecoderArray;
-  public EnumDecoderBasic enumDecoderBasic;
-  public EnumDecoderConstant enumDecoderConstant;
+  public RequiredPrimitiveDecoder requiredPrimitiveDecoder;
+  public OptionalPrimitiveDecoder optionalPrimitiveDecoder;
+  public ConstantPrimitiveDecoder constantPrimitiveDecoder;
+  public ArrayPrimitiveDecoder arrayPrimitiveDecoder;
+
+  public EnumDecoder enumDecoder;
+  public ConstantEnumDecoder constantEnumDecoder;
+
   public BitSetDecoder bitSetDecoder;
+
   public CompositeDecoder compositeDecoder;
 
-  public FieldDecoder(CompositeDecoder f) {
-    compositeDecoder = f;
+  public FieldDecoder(RequiredPrimitiveDecoder decoder) {
+    requiredPrimitiveDecoder = decoder;
   }
 
-  public FieldDecoder(BitSetDecoder f) {
-    bitSetDecoder = f;
+  public FieldDecoder(OptionalPrimitiveDecoder decoder) {
+    optionalPrimitiveDecoder = decoder;
   }
 
-  public FieldDecoder(PrimitiveDecoderArray f) {
-    primitiveDecoderArray = f;
+  public FieldDecoder(ConstantPrimitiveDecoder decoder) {
+    constantPrimitiveDecoder = decoder;
   }
 
-  public FieldDecoder(PrimitiveDecoderConstant f) {
-    primitiveDecoderConstant = f;
+  public FieldDecoder(ArrayPrimitiveDecoder decoder) {
+    arrayPrimitiveDecoder = decoder;
   }
 
-  public FieldDecoder(PrimitiveDecoderOptional f) {
-    primitiveDecoderOptional = f;
+  public FieldDecoder(EnumDecoder decoder) {
+    enumDecoder = decoder;
   }
 
-  public FieldDecoder(PrimitiveDecoderRequired f) {
-    primitiveDecoderRequired = f;
+  public FieldDecoder(ConstantEnumDecoder decoder) {
+    constantEnumDecoder = decoder;
   }
 
-  public FieldDecoder(EnumDecoderConstant f) {
-    enumDecoderConstant = f;
+  public FieldDecoder(BitSetDecoder decoder) {
+    bitSetDecoder = decoder;
   }
 
-  public FieldDecoder(EnumDecoderBasic f) {
-    enumDecoderBasic = f;
+  public FieldDecoder(CompositeDecoder decoder) {
+    compositeDecoder = decoder;
   }
 
-  public static class BitSetDecoder {
+  public static class RequiredPrimitiveDecoder {
+
+    public String characterEncoding;
     public String functionName;
-    public String structTypeName;
-    public boolean versionGreaterThanZero;
-    public int version;
     public String rustPrimitiveType;
-    public int offset;
-  }
-
-  public static class CompositeDecoder {
-    public boolean versionGreaterThanZero;
-    public String decoderName;
-    public String decoderTypeName;
+    public boolean versionAboveZero;
     public int version;
+    public String rustLiteral;
     public int offset;
   }
 
-  public static class EnumDecoderBasic {
+  public static class OptionalPrimitiveDecoder {
+    public String applicableNullValue;
+    public String characterEncoding;
     public String functionName;
-    public String enumType;
-    public boolean versionGreaterThanZero;
-    public int version;
     public String rustPrimitiveType;
+    public boolean versionAboveZero;
+    public int version;
     public int offset;
+    public boolean isNAN;
+    public String literal;
   }
 
-  public static class EnumDecoderConstant {
-
-    public String enumType;
-    public String constValueName;
+  public static class ConstantPrimitiveDecoder {
+    public String characterEncoding;
     public String functionName;
+    public String returnValue;
+    public String rawConstValue;
   }
 
-  public static class PrimitiveDecoderArray {
+  public static class ArrayPrimitiveDecoder {
 
     public String functionName;
     public String rustPrimitiveType;
     public int arrayLength;
-    public boolean versionGreaterThanZero;
+    public boolean versionAboveZero;
     public int version;
     public String applicableNullValue;
     public List<ArrayItems> arrayItems;
@@ -96,33 +96,36 @@ public class FieldDecoder {
     }
   }
 
-  public static class PrimitiveDecoderConstant {
-    public String characterEncoding;
+  public static class EnumDecoder {
     public String functionName;
-    public String returnValue;
-    public String rawConstValue;
-  }
-
-  public static class PrimitiveDecoderOptional {
-    public String applicableNullValue;
-    public String characterEncoding;
-    public String functionName;
-    public String rustPrimitiveType;
-    public boolean versionGreaterThanZero;
+    public String enumTypeName;
+    public boolean versionAboveZero;
     public int version;
+    public String rustPrimitiveType;
     public int offset;
-    public boolean isNAN;
-    public String literal;
   }
 
-  public static class PrimitiveDecoderRequired {
+  public static class ConstantEnumDecoder {
 
-    public String characterEncoding;
     public String functionName;
-    public String rustPrimitiveType;
-    public boolean versionGreaterThanZero;
+    public String enumTypeName;
+    public String constValueName;
+  }
+
+  public static class BitSetDecoder {
+    public String functionName;
+    public String bitSetTypeName;
+    public boolean versionAboveZero;
     public int version;
-    public String rustLiteral;
+    public String rustPrimitiveType;
+    public int offset;
+  }
+
+  public static class CompositeDecoder {
+    public boolean versionAboveZero;
+    public String functionName;
+    public String decoderTypeName;
+    public int version;
     public int offset;
   }
 }

@@ -35,8 +35,8 @@ class LibRsGenerator
      */
     static LibRs generate(RustOutputManager outputManager) throws IOException
     {
-        var libRsPojo = new LibRs();
-        libRsPojo.filename = "lib";
+        var libRs = new LibRs();
+        libRs.filename = "lib";
         final ArrayList<String> modules = new ArrayList<>();
         try (Stream<Path> walk = Files.walk(outputManager.getSrcDirPath()))
         {
@@ -48,8 +48,8 @@ class LibRsGenerator
                 .map((fileName) -> fileName.substring(0, fileName.length() - 3))
                 .forEach(modules::add);
         }
-        libRsPojo.modules = modules;
-        libRsPojo.modules.replaceAll(RustUtil::toLowerSnakeCase);
-        return libRsPojo;
+        libRs.modules = modules;
+        libRs.modules.replaceAll(RustUtil::toLowerSnakeCase);
+        return libRs;
     }
 }

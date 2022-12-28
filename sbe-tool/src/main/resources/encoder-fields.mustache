@@ -1,9 +1,5 @@
-{{#primitiveEncoderConstant}}
-// skipping CONSTANT {{name}}
-
-{{/primitiveEncoderConstant}}
-{{#primitiveEncoderBasic}}
-/// primitive field '{{name}}'
+{{#primitiveEncoder}}
+/// primitive field '{{fieldName}}'
 /// - min value: {{applicableMinValue}}
 /// - max value: {{applicableMaxValue}}
 /// - null value: {{applicableNullValue}}
@@ -17,9 +13,13 @@ pub fn {{functionName}}(&mut self, value: {{rustPrimitiveType}}) {
     self.get_buf_mut().put_{{rustPrimitiveType}}_at(offset, value);
 }
 
-{{/primitiveEncoderBasic}}
-{{#primitiveEncoderArray}}
-/// primitive array field '{{name}}'
+{{/primitiveEncoder}}
+{{#constantPrimitiveEncoder}}
+// skipping CONSTANT {{fieldName}}
+
+{{/constantPrimitiveEncoder}}
+{{#arrayPrimitiveEncoder}}
+/// primitive array field '{{fieldName}}'
 /// - min value: {{applicableMinValue}}
 /// - max value: {{applicableMaxValue}}
 /// - null value: {{applicableNullValue}}
@@ -37,23 +37,23 @@ pub fn {{functionName}}(&mut self, value: [{{rustPrimitiveType}}; {{arrayLength}
 {{/arrayItems}}
 }
 
-{{/primitiveEncoderArray}}
-{{#enumEncoderConstant}}
-// skipping CONSTANT enum '{{name}}'
-
-{{/enumEncoderConstant}}
-{{#enumEncoderBasic}}
+{{/arrayPrimitiveEncoder}}
+{{#enumEncoder}}
 /// REQUIRED enum
 #[inline]
-pub fn {{functionName}}(&mut self, value: {{enumType}}) {
+pub fn {{functionName}}(&mut self, value: {{enumTypeName}}) {
     let offset = self.offset + {{offset}};
     self.get_buf_mut().put_{{rustPrimitiveType}}_at(offset, value as {{rustPrimitiveType}})
 }
 
-{{/enumEncoderBasic}}
+{{/enumEncoder}}
+{{#constantEnumEncoder}}
+// skipping CONSTANT enum '{{fieldName}}'
+
+{{/constantEnumEncoder}}
 {{#bitSetEncoder}}
 #[inline]
-pub fn {{functionName}}(&mut self, value: {{structTypeName}}) {
+pub fn {{functionName}}(&mut self, value: {{bitSetTypeName}}) {
     let offset = self.offset + {{offset}};
     self.get_buf_mut().put_{{rustPrimitiveType}}_at(offset, value.0)
 }

@@ -10,7 +10,7 @@ pub const SBE_SCHEMA_VERSION: {{schemaVersionType}} = {{schemaVersion}};
 
 pub mod encoder {
     use super::*;
-{{#encoder}}
+{{#encoderStruct}}
 
     #[derive(Debug, Default)]
     pub struct {{msgTypeName}}<'a> {
@@ -167,11 +167,11 @@ pub mod encoder {
     {{/groupEncoderDecoders}}
 } // end encoder
 
-{{/encoder}}
+{{/encoderStruct}}
 pub mod decoder {
     use super::*;
 
-{{#decoder}}
+{{#decoderStruct}}
     #[derive(Debug, Default)]
     pub struct {{msgTypeName}}<'a> {
         buf: ReadBuf<'a>,
@@ -336,6 +336,6 @@ pub mod decoder {
     }
 
     {{/groupEncoderDecoders}}
-{{/decoder}}
+{{/decoderStruct}}
 } // end decoder
 

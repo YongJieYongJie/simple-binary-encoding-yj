@@ -9,7 +9,7 @@ public class Message {
     public int schemaId;
     public String schemaVersionType;
     public int schemaVersion;
-    public EncoderDecoderStruct encoder;
-    public EncoderDecoderStruct decoder;
+    public EncoderDecoderStruct encoderStruct;
+    public EncoderDecoderStruct decoderStruct;
     public String filename;
 }

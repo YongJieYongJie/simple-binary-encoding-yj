@@ -47,24 +47,24 @@ class MessageCodecGenerator implements GroupContainer
         final CodecType codecType
     )
     {
-        var messageValues = new EncoderDecoderStruct();
+        var messageEncoderDecoder = new EncoderDecoderStruct();
 
         // i.e. <name>Decoder or <name>Encoder
-        messageValues.msgTypeName = formatStructName(msgToken.name()) + codecType.name();
-        messageValues.blockLengthType = rustTypeName(ir.headerStructure().blockLengthType());
-        messageValues.schemaVersionType = rustTypeName(ir.headerStructure().schemaVersionType());
+        messageEncoderDecoder.msgTypeName = formatStructName(msgToken.name()) + codecType.name();
+        messageEncoderDecoder.blockLengthType = rustTypeName(ir.headerStructure().blockLengthType());
+        messageEncoderDecoder.schemaVersionType = rustTypeName(ir.headerStructure().schemaVersionType());
 
         if (codecType == Decoder)
         {
-            messageValues.fieldDecoders = RustGenerator.generateDecoderFields(fields);
-            messageValues.groupDecoders = RustGenerator.generateDecoderGroups(groups, this);
-            messageValues.varDataDecoders = RustGenerator.generateDecoderVarData(varData, false);
+            messageEncoderDecoder.fieldDecoders = RustGenerator.generateDecoderFields(fields);
+            messageEncoderDecoder.groupDecoders = RustGenerator.generateDecoderGroups(groups, this);
+            messageEncoderDecoder.varDataDecoders = RustGenerator.generateDecoderVarData(varData, false);
         }
         else
         {
-            messageValues.fieldEncoders = RustGenerator.generateEncoderFields(fields);
-            messageValues.groupEncoders = RustGenerator.generateEncoderGroups(groups, this);
-            messageValues.varDataEncoders = RustGenerator.generateEncoderVarData(varData);
+            messageEncoderDecoder.fieldEncoders = RustGenerator.generateEncoderFields(fields);
+            messageEncoderDecoder.groupEncoders = RustGenerator.generateEncoderGroups(groups, this);
+            messageEncoderDecoder.varDataEncoders = RustGenerator.generateEncoderVarData(varData);
         }
 
         List<GroupEncoderDecoderStruct> innerGroups = new ArrayList<>();
@@ -85,9 +85,9 @@ class MessageCodecGenerator implements GroupContainer
             groupGenerators.addAll(nextGroupGenerators);
             nextGroupGenerators.clear();
         }
-        messageValues.groupEncoderDecoders = innerGroups;
+        messageEncoderDecoder.groupEncoderDecoders = innerGroups;
 
-        return messageValues;
+        return messageEncoderDecoder;
     }
 
     public GroupGenerator addInnerGroup(final String name, final Token groupToken)
