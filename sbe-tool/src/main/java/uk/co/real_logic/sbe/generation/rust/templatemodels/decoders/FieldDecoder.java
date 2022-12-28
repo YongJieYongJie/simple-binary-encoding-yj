@@ -4,14 +4,46 @@ import java.util.List;
 
 public class FieldDecoder {
 
-  public PrimitiveDecoderArray primitiveDecoderArray;
-  public PrimitiveDecoderConstant primitiveDecoderConstant;
-  public BitSetDecoder bitSetDecoder;
-  public PrimitiveDecoderOptional primitiveDecoderOptional;
   public PrimitiveDecoderRequired primitiveDecoderRequired;
-  public EnumDecoderConstant enumDecoderConstant;
+  public PrimitiveDecoderOptional primitiveDecoderOptional;
+  public PrimitiveDecoderConstant primitiveDecoderConstant;
+  public PrimitiveDecoderArray primitiveDecoderArray;
   public EnumDecoderBasic enumDecoderBasic;
+  public EnumDecoderConstant enumDecoderConstant;
+  public BitSetDecoder bitSetDecoder;
   public CompositeDecoder compositeDecoder;
+
+  public FieldDecoder(CompositeDecoder f) {
+    compositeDecoder = f;
+  }
+
+  public FieldDecoder(BitSetDecoder f) {
+    bitSetDecoder = f;
+  }
+
+  public FieldDecoder(PrimitiveDecoderArray f) {
+    primitiveDecoderArray = f;
+  }
+
+  public FieldDecoder(PrimitiveDecoderConstant f) {
+    primitiveDecoderConstant = f;
+  }
+
+  public FieldDecoder(PrimitiveDecoderOptional f) {
+    primitiveDecoderOptional = f;
+  }
+
+  public FieldDecoder(PrimitiveDecoderRequired f) {
+    primitiveDecoderRequired = f;
+  }
+
+  public FieldDecoder(EnumDecoderConstant f) {
+    enumDecoderConstant = f;
+  }
+
+  public FieldDecoder(EnumDecoderBasic f) {
+    enumDecoderBasic = f;
+  }
 
   public static class BitSetDecoder {
     public String functionName;

@@ -231,9 +231,7 @@ public class RustGenerator implements CodeGenerator {
       item.itemIndex = i;
       e.arrayItems.add(item);
     }
-    var wrapper = new FieldEncoder();
-    wrapper.primitiveEncoderArray = e;
-    return wrapper;
+    return new FieldEncoder(e);
   }
 
   private static FieldEncoder generatePrimitiveEncoderJSONConstant(
@@ -241,9 +239,7 @@ public class RustGenerator implements CodeGenerator {
     assert typeToken.encoding().presence() == Encoding.Presence.CONSTANT;
     var e = new PrimitiveEncoderConstant();
     e.name = name;
-    var wrapper = new FieldEncoder();
-    wrapper.primitiveEncoderConstant = e;
-    return wrapper;
+    return new FieldEncoder(e);
   }
 
   private static FieldEncoder generatePrimitiveEncoderJSONBasic(
@@ -261,9 +257,7 @@ public class RustGenerator implements CodeGenerator {
     e.encodedLength = typeToken.encodedLength();
     e.functionName = formatFunctionName(name);
     e.rustPrimitiveType = rustPrimitiveType;
-    var wrapper = new FieldEncoder();
-    wrapper.primitiveEncoderBasic = e;
-    return wrapper;
+    return new FieldEncoder(e);
   }
 
   private static FieldEncoder generateEnumEncoder(
@@ -271,18 +265,14 @@ public class RustGenerator implements CodeGenerator {
     if (fieldToken.isConstantEncoding()) {
       var e = new EnumEncoderConstant();
       e.name = name;
-      var wrapper = new FieldEncoder();
-      wrapper.enumEncoderConstant = e;
-      return wrapper;
+      return new FieldEncoder(e);
     }
     var e = new EnumEncoderBasic();
     e.rustPrimitiveType = rustTypeName(typeToken.encoding().primitiveType());
     e.functionName = formatFunctionName(name);
     e.enumType = formatStructName(typeToken.applicableTypeName());
     e.offset = typeToken.offset();
-    var wrapper = new FieldEncoder();
-    wrapper.enumEncoderBasic = e;
-    return wrapper;
+    return new FieldEncoder(e);
   }
 
   private static FieldEncoder generateBitSetEncoder(final Token bitsetToken, final String name)
@@ -292,9 +282,7 @@ public class RustGenerator implements CodeGenerator {
     e.structTypeName = formatStructName(bitsetToken.applicableTypeName());
     e.offset = bitsetToken.offset();
     e.rustPrimitiveType = rustTypeName(bitsetToken.encoding().primitiveType());
-    var wrapper = new FieldEncoder();
-    wrapper.bitSetEncoder = e;
-    return wrapper;
+    return new FieldEncoder(e);
   }
 
   private static FieldEncoder generateCompositeEncoder(
@@ -303,9 +291,7 @@ public class RustGenerator implements CodeGenerator {
     e.encoderFunctionName = toLowerSnakeCase(encoderName(name));
     e.encoderTypeName = encoderName(formatStructName(typeToken.name()));
     e.offset = typeToken.offset();
-    var wrapper = new FieldEncoder();
-    wrapper.compositeEncoder = e;
-    return wrapper;
+    return new FieldEncoder(e);
   }
 
   static List<FieldDecoder> generateDecoderFields(final List<Token> tokens) {
@@ -336,9 +322,7 @@ public class RustGenerator implements CodeGenerator {
     e.versionGreaterThanZero = fieldToken.version() > 0;
     e.version = fieldToken.version();
     e.offset = fieldToken.offset();
-    var wrapper = new FieldDecoder();
-    wrapper.compositeDecoder = e;
-    return wrapper;
+    return new FieldDecoder(e);
   }
 
   private static FieldDecoder generateBitSetDecoder(final Token bitsetToken, final String name)
@@ -350,9 +334,7 @@ public class RustGenerator implements CodeGenerator {
     e.version = bitsetToken.version();
     e.rustPrimitiveType = rustTypeName(bitsetToken.encoding().primitiveType());
     e.offset = bitsetToken.offset();
-    var wrapper = new FieldDecoder();
-    wrapper.bitSetDecoder = e;
-    return wrapper;
+    return new FieldDecoder(e);
   }
 
   private static FieldDecoder generatePrimitiveArrayDecoderJson(
@@ -382,9 +364,7 @@ public class RustGenerator implements CodeGenerator {
       arrayItems.add(arrayItem);
     }
     e.arrayItems = arrayItems;
-    var wrapper = new FieldDecoder();
-    wrapper.primitiveDecoderArray = e;
-    return wrapper;
+    return new FieldDecoder(e);
   }
 
   private static FieldDecoder generatePrimitiveConstantDecoderJson(
@@ -409,9 +389,7 @@ public class RustGenerator implements CodeGenerator {
     }
     e.functionName = formatFunctionName(name);
 
-    var wrapper = new FieldDecoder();
-    wrapper.primitiveDecoderConstant = e;
-    return wrapper;
+    return new FieldDecoder(e);
   }
 
   private static FieldDecoder generatePrimitiveOptionalDecoderJson(
@@ -439,9 +417,7 @@ public class RustGenerator implements CodeGenerator {
     } else {
       e.literal = literal;
     }
-    var wrapper = new FieldDecoder();
-    wrapper.primitiveDecoderOptional = e;
-    return wrapper;
+    return new FieldDecoder(e);
   }
 
   private static FieldDecoder generatePrimitiveRequiredDecoderJson(
@@ -457,9 +433,7 @@ public class RustGenerator implements CodeGenerator {
     e.version = fieldToken.version();
     e.rustLiteral = generateRustLiteral(encoding.primitiveType(), encoding.applicableNullValue().toString());
     e.offset = fieldToken.offset();
-    var wrapper = new FieldDecoder();
-    wrapper.primitiveDecoderRequired = e;
-    return wrapper;
+    return new FieldDecoder(e);
   }
 
   private static FieldDecoder generateEnumDecoder(
@@ -478,9 +452,7 @@ public class RustGenerator implements CodeGenerator {
       enumDecoderConstant.constValueName =
           -1 == indexOfDot ? rawConstValueName : rawConstValueName.substring(indexOfDot + 1);
       enumDecoderConstant.functionName = formatFunctionName(name);
-      var wrapper1 = new FieldDecoder();
-      wrapper1.enumDecoderConstant = enumDecoderConstant;
-      return wrapper1;
+      return new FieldDecoder(enumDecoderConstant);
     } else {
       var enumDecoderBasic = new EnumDecoderBasic();
       enumDecoderBasic.functionName = formatFunctionName(name);
@@ -489,9 +461,7 @@ public class RustGenerator implements CodeGenerator {
       enumDecoderBasic.enumType = enumType;
       enumDecoderBasic.rustPrimitiveType = rustTypeName(typeToken.encoding().primitiveType());
       enumDecoderBasic.offset = typeToken.offset();
-      var wrapper2 = new FieldDecoder();
-      wrapper2.enumDecoderBasic = enumDecoderBasic;
-      return wrapper2;
+      return new FieldDecoder(enumDecoderBasic);
     }
   }
 

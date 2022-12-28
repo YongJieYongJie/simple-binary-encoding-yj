@@ -1,10 +1,8 @@
 package uk.co.real_logic.sbe.generation.rust.templatemodels.encoders;
 
 import java.util.List;
-import uk.co.real_logic.sbe.generation.rust.templatemodels.GroupEncoderDecoderStruct;
 import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.FieldDecoder;
-import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.GroupDecoder;
-import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.VarDataDecoder;
+import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.FieldDecoder.CompositeDecoder;
 
 public class FieldEncoder {
 
@@ -15,6 +13,34 @@ public class FieldEncoder {
   public EnumEncoderConstant enumEncoderConstant;
   public CompositeEncoder compositeEncoder;
   public BitSetEncoder bitSetEncoder;
+
+  public FieldEncoder(PrimitiveEncoderArray f) {
+    primitiveEncoderArray = f;
+  }
+
+  public FieldEncoder(PrimitiveEncoderConstant f) {
+    primitiveEncoderConstant = f;
+  }
+
+  public FieldEncoder(PrimitiveEncoderBasic f) {
+    primitiveEncoderBasic = f;
+  }
+
+  public FieldEncoder(EnumEncoderConstant f) {
+    enumEncoderConstant = f;
+  }
+
+  public FieldEncoder(EnumEncoderBasic f) {
+    enumEncoderBasic = f;
+  }
+
+  public FieldEncoder(BitSetEncoder f) {
+    bitSetEncoder = f;
+  }
+
+  public FieldEncoder(CompositeEncoder f) {
+    compositeEncoder = f;
+  }
 
   public static class BitSetEncoder {
 
