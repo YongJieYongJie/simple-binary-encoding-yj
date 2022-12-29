@@ -1,6 +1,6 @@
 {{#requiredPrimitiveDecoder}}
 /// primitive field - 'REQUIRED'
-/// characterEncoding: '{{characterEncoding}}'
+{{#characterEncoding}}/// characterEncoding: '{{characterEncoding}}'{{/characterEncoding}}
 #[inline]
 pub fn {{functionName}}(&self) -> {{rustPrimitiveType}} {
     {{#versionAboveZero}}
@@ -15,7 +15,7 @@ pub fn {{functionName}}(&self) -> {{rustPrimitiveType}} {
 {{/requiredPrimitiveDecoder}}
 {{#optionalPrimitiveDecoder}}
 /// primitive field - 'OPTIONAL' { null_value: '{{applicableNullValue}}' }
-/// characterEncoding: '{{characterEncoding}}'
+{{#characterEncoding}}/// characterEncoding: '{{characterEncoding}}'{{/characterEncoding}}
 #[inline]
 pub fn {{functionName}}(&self) -> Option<{{rustPrimitiveType}}> {
     {{#versionAboveZero}}
@@ -40,7 +40,7 @@ pub fn {{functionName}}(&self) -> Option<{{rustPrimitiveType}}> {
 {{/optionalPrimitiveDecoder}}
 {{#constantPrimitiveDecoder}}
 /// CONSTANT 
-/// characterEncoding: '{{characterEncoding}}{{^characterEncoding}}N.A.{{/characterEncoding}}'
+{{#characterEncoding}}/// characterEncoding: '{{characterEncoding}}'{{/characterEncoding}}
 #[inline]
 pub fn {{functionName}}(&self) -> {{&returnValue}} {
     {{&rawConstValue}}

@@ -23,28 +23,22 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.stream.Stream;
 
-/**
- * Generates `lib.rs` specific code.
- */
-class LibRsGenerator {
-
-    /**
-     * Create a new 'lib.rs' for the library being generated
-     *
-     * @param outputManager for generating the codecs to.
-     */
-    static LibRs generate(RustOutputManager outputManager) throws IOException {
-        var libRs = new LibRs();
+class LibRsGenerator
+{
+    static LibRs generate(final RustOutputManager outputManager) throws IOException
+    {
+        final var libRs = new LibRs();
         libRs.filename = "lib";
         final ArrayList<String> modules = new ArrayList<>();
-        try (Stream<Path> walk = Files.walk(outputManager.getSrcDirPath())) {
+        try (Stream<Path> walk = Files.walk(outputManager.getSrcDirPath()))
+        {
             walk
-                    .filter(Files::isRegularFile)
-                    .map((path) -> path.getFileName().toString())
-                    .filter((fileName) -> fileName.endsWith(".rs"))
-                    .filter((fileName) -> !fileName.equals("lib.rs"))
-                    .map((fileName) -> fileName.substring(0, fileName.length() - 3))
-                    .forEach(modules::add);
+                .filter(Files::isRegularFile)
+                .map((path) -> path.getFileName().toString())
+                .filter((fileName) -> fileName.endsWith(".rs"))
+                .filter((fileName) -> !fileName.equals("lib.rs"))
+                .map((fileName) -> fileName.substring(0, fileName.length() - 3))
+                .forEach(modules::add);
         }
         libRs.modules = modules;
         libRs.modules.replaceAll(RustUtil::toLowerSnakeCase);

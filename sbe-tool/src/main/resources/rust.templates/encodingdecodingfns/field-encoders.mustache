@@ -3,8 +3,8 @@
 /// - min value: {{applicableMinValue}}
 /// - max value: {{applicableMaxValue}}
 /// - null value: {{applicableNullValue}}
-/// - characterEncoding: {{characterEncoding}}
-/// - semanticType: {{semanticType}}
+/// - characterEncoding: {{characterEncoding}}{{^characterEncoding}}null{{/characterEncoding}}
+/// - semanticType: {{semanticType}}{{^semanticType}}null{{/semanticType}}
 /// - encodedOffset: {{offset}}
 /// - encodedLength: {{encodedLength}}
 #[inline]
@@ -23,8 +23,8 @@ pub fn {{functionName}}(&mut self, value: {{rustPrimitiveType}}) {
 /// - min value: {{applicableMinValue}}
 /// - max value: {{applicableMaxValue}}
 /// - null value: {{applicableNullValue}}
-/// - characterEncoding: {{characterEncoding}}
-/// - semanticType: {{semanticType}}
+/// - characterEncoding: {{characterEncoding}}{{^characterEncoding}}null{{/characterEncoding}}
+/// - semanticType: {{semanticType}}{{^semanticType}}null{{/semanticType}}
 /// - encodedOffset: {{offset}}
 /// - encodedLength: {{encodedLength}}
 /// - version: {{version}}

@@ -26,23 +26,27 @@ import java.util.List;
 
 import static uk.co.real_logic.sbe.generation.rust.RustUtil.rustTypeName;
 
-class GroupGenerator implements GroupContainer {
+class GroupGenerator implements GroupContainer
+{
 
     public final List<GroupGenerator> groupGenerators = new ArrayList<>();
     private final String name;
     private final Token groupToken;
     public GroupCodecStruct subGroup;
 
-    GroupGenerator(final String name, final Token groupToken) {
+    GroupGenerator(final String name, final Token groupToken)
+    {
         this.name = name;
         this.groupToken = groupToken;
     }
 
-    public boolean hasSubGroup() {
+    public boolean hasSubGroup()
+    {
         return subGroup != null;
     }
 
-    public GroupGenerator addSubGroup(final String name, final Token groupToken) {
+    public GroupGenerator addSubGroup(final String name, final Token groupToken)
+    {
         final GroupGenerator groupGenerator = new GroupGenerator(name, groupToken);
         groupGenerators.add(groupGenerator);
 
@@ -50,12 +54,13 @@ class GroupGenerator implements GroupContainer {
     }
 
     void generateEncoder(
-            final List<Token> tokens,
-            final List<Token> fields,
-            final List<Token> groups,
-            final List<Token> varData,
-            final int index) {
-        var groupEncoderStruct = new GroupCodecStruct();
+        final List<Token> tokens,
+        final List<Token> fields,
+        final List<Token> groups,
+        final List<Token> varData,
+        final int index)
+    {
+        final var groupEncoderStruct = new GroupCodecStruct();
         final Token blockLengthToken = Generators.findFirst("blockLength", tokens, index);
         final Token numInGroupToken = Generators.findFirst("numInGroup", tokens, index);
         groupEncoderStruct.numInGroupPrimitiveType = rustTypeName(numInGroupToken.encoding().primitiveType());
@@ -71,12 +76,13 @@ class GroupGenerator implements GroupContainer {
     }
 
     void generateDecoder(
-            final List<Token> tokens,
-            final List<Token> fields,
-            final List<Token> groups,
-            final List<Token> varData,
-            final int index) {
-        var groupDecoderStruct = new GroupCodecStruct();
+        final List<Token> tokens,
+        final List<Token> fields,
+        final List<Token> groups,
+        final List<Token> varData,
+        final int index)
+    {
+        final var groupDecoderStruct = new GroupCodecStruct();
         final Token blockLengthToken = Generators.findFirst("blockLength", tokens, index);
         final PrimitiveType blockLengthPrimitiveType = blockLengthToken.encoding().primitiveType();
 

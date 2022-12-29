@@ -32,66 +32,82 @@ import static uk.co.real_logic.sbe.generation.rust.RustGenerator.CodecType.Encod
 import static uk.co.real_logic.sbe.generation.rust.RustUtil.formatStructName;
 import static uk.co.real_logic.sbe.generation.rust.RustUtil.rustTypeName;
 
-class MessageCodecGenerator implements GroupContainer {
+class MessageCodecGenerator implements GroupContainer
+{
 
     private final List<GroupGenerator> groupGenerators = new ArrayList<>();
 
-    MessageCodecGenerator() {
+    MessageCodecGenerator()
+    {
     }
 
     static MessageCodecStruct generateEncoder(
-            final Ir ir,
-            final Token msgToken,
-            final List<Token> fields,
-            final List<Token> groups,
-            final List<Token> varData) {
+        final Ir ir,
+        final Token msgToken,
+        final List<Token> fields,
+        final List<Token> groups,
+        final List<Token> varData)
+    {
         return new MessageCodecGenerator().generate(fields, groups, varData, ir, msgToken, Encoder);
     }
 
     static MessageCodecStruct generateDecoder(
-            final Ir ir,
-            final Token msgToken,
-            final List<Token> fields,
-            final List<Token> groups,
-            final List<Token> varData) {
+        final Ir ir,
+        final Token msgToken,
+        final List<Token> fields,
+        final List<Token> groups,
+        final List<Token> varData)
+    {
         return new MessageCodecGenerator().generate(fields, groups, varData, ir, msgToken, Decoder);
     }
 
     MessageCodecStruct generate(
-            final List<Token> fields,
-            final List<Token> groups,
-            final List<Token> varData,
-            final Ir ir,
-            final Token msgToken,
-            final CodecType codecType
-    ) {
-        var messageCodec = new MessageCodecStruct();
+        final List<Token> fields,
+        final List<Token> groups,
+        final List<Token> varData,
+        final Ir ir,
+        final Token msgToken,
+        final CodecType codecType
+    )
+    {
+        final var messageCodec = new MessageCodecStruct();
 
         // i.e. <name>Decoder or <name>Encoder
         messageCodec.msgTypeName = formatStructName(msgToken.name()) + codecType.name();
         messageCodec.blockLengthType = rustTypeName(ir.headerStructure().blockLengthType());
         messageCodec.schemaVersionType = rustTypeName(ir.headerStructure().schemaVersionType());
 
-        if (codecType == Decoder) {
+        if (codecType == Decoder)
+        {
             messageCodec.fieldDecoders = RustGenerator.generateDecoderFields(fields);
             messageCodec.groupDecoders = RustGenerator.generateDecoderGroups(groups, this);
             messageCodec.varDataDecoders = RustGenerator.generateDecoderVarData(varData, false);
-        } else {
+        }
+        else
+        {
             messageCodec.fieldEncoders = RustGenerator.generateEncoderFields(fields);
             messageCodec.groupEncoders = RustGenerator.generateEncoderGroups(groups, this);
             messageCodec.varDataEncoders = RustGenerator.generateEncoderVarData(varData);
         }
 
-        List<GroupCodecStruct> subGroups = new ArrayList<>();
+        final List<GroupCodecStruct> subGroups = new ArrayList<>();
 
         // Unwrap subgroups in a breadth-first manner (i.e., groups that are generated directly by the
         // message will be processed first, followed by any subgroups these initial groups generates.
-        List<GroupGenerator> nextGroupGenerators = new ArrayList<>();
-        Set<String> alreadyAdded = new HashSet<>();
-        while (!groupGenerators.isEmpty()) {
-            for (GroupGenerator groupGenerator : groupGenerators) {
-                if (!groupGenerator.hasSubGroup()) continue;
-                if (alreadyAdded.contains(groupGenerator.subGroup.name)) continue;
+        final List<GroupGenerator> nextGroupGenerators = new ArrayList<>();
+        final Set<String> alreadyAdded = new HashSet<>();
+        while (!groupGenerators.isEmpty())
+        {
+            for (final GroupGenerator groupGenerator : groupGenerators)
+            {
+                if (!groupGenerator.hasSubGroup())
+                {
+                    continue;
+                }
+                if (alreadyAdded.contains(groupGenerator.subGroup.name))
+                {
+                    continue;
+                }
                 alreadyAdded.add(groupGenerator.subGroup.name);
                 subGroups.add(groupGenerator.subGroup);
                 nextGroupGenerators.addAll(groupGenerator.groupGenerators);
@@ -105,7 +121,8 @@ class MessageCodecGenerator implements GroupContainer {
         return messageCodec;
     }
 
-    public GroupGenerator addSubGroup(final String name, final Token groupToken) {
+    public GroupGenerator addSubGroup(final String name, final Token groupToken)
+    {
         final GroupGenerator groupGenerator = new GroupGenerator(name, groupToken);
         groupGenerators.add(groupGenerator);
         return groupGenerator;
