@@ -1,6 +1,7 @@
-package uk.co.real_logic.sbe.generation.rust.templatemodels;
+package uk.co.real_logic.sbe.generation.rust.templatemodels.typedefs;
 
 public class Message {
+    public String filename;
     public String blockLengthType;
     public int blockLength;
     public String templateIdType;
@@ -9,7 +10,6 @@ public class Message {
     public int schemaId;
     public String schemaVersionType;
     public int schemaVersion;
-    public EncoderDecoderStruct encoderStruct;
-    public EncoderDecoderStruct decoderStruct;
-    public String filename;
+    public MessageEncoderDecoderStruct encoderStruct;
+    public MessageEncoderDecoderStruct decoderStruct;
 }

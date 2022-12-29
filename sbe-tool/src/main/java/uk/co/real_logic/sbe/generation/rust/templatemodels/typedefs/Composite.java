@@ -1,9 +1,9 @@
-package uk.co.real_logic.sbe.generation.rust.templatemodels;
+package uk.co.real_logic.sbe.generation.rust.templatemodels.typedefs;
+
+import uk.co.real_logic.sbe.generation.rust.templatemodels.encodingdecodingfns.FieldDecoder;
+import uk.co.real_logic.sbe.generation.rust.templatemodels.encodingdecodingfns.FieldEncoder;
 
 import java.util.List;
-
-import uk.co.real_logic.sbe.generation.rust.templatemodels.decoders.FieldDecoder;
-import uk.co.real_logic.sbe.generation.rust.templatemodels.encoders.FieldEncoder;
 
 public class Composite {
     public String filename;

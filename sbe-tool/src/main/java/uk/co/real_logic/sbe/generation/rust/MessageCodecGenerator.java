@@ -15,53 +15,68 @@
  */
 package uk.co.real_logic.sbe.generation.rust;
 
-import static uk.co.real_logic.sbe.generation.rust.RustGenerator.CodecType.Decoder;
-import static uk.co.real_logic.sbe.generation.rust.RustGenerator.CodecType.Encoder;
-import static uk.co.real_logic.sbe.generation.rust.RustUtil.formatStructName;
-import static uk.co.real_logic.sbe.generation.rust.RustUtil.rustTypeName;
+import uk.co.real_logic.sbe.generation.rust.RustGenerator.CodecType;
+import uk.co.real_logic.sbe.generation.rust.RustGenerator.GroupContainer;
+import uk.co.real_logic.sbe.generation.rust.templatemodels.typedefs.GroupEncoderDecoderStruct;
+import uk.co.real_logic.sbe.generation.rust.templatemodels.typedefs.MessageEncoderDecoderStruct;
+import uk.co.real_logic.sbe.ir.Ir;
+import uk.co.real_logic.sbe.ir.Token;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import uk.co.real_logic.sbe.generation.rust.RustGenerator.CodecType;
-import uk.co.real_logic.sbe.generation.rust.RustGenerator.GroupContainer;
-import uk.co.real_logic.sbe.generation.rust.templatemodels.GroupEncoderDecoderStruct;
-import uk.co.real_logic.sbe.generation.rust.templatemodels.EncoderDecoderStruct;
-import uk.co.real_logic.sbe.ir.Ir;
-import uk.co.real_logic.sbe.ir.Token;
 
-class MessageCodecGenerator implements GroupContainer
-{
+import static uk.co.real_logic.sbe.generation.rust.RustGenerator.CodecType.Decoder;
+import static uk.co.real_logic.sbe.generation.rust.RustGenerator.CodecType.Encoder;
+import static uk.co.real_logic.sbe.generation.rust.RustUtil.formatStructName;
+import static uk.co.real_logic.sbe.generation.rust.RustUtil.rustTypeName;
+
+class MessageCodecGenerator implements GroupContainer {
 
     private final List<GroupGenerator> groupGenerators = new ArrayList<>();
 
-    MessageCodecGenerator() {}
+    MessageCodecGenerator() {
+    }
 
-    EncoderDecoderStruct generate(
-        final List<Token> fields,
-        final List<Token> groups,
-        final List<Token> varData,
-        final Ir ir,
-        final Token msgToken,
-        final CodecType codecType
-    )
-    {
-        var messageEncoderDecoder = new EncoderDecoderStruct();
+    static MessageEncoderDecoderStruct generateEncoder(
+            final Ir ir,
+            final Token msgToken,
+            final List<Token> fields,
+            final List<Token> groups,
+            final List<Token> varData) {
+        return new MessageCodecGenerator().generate(fields, groups, varData, ir, msgToken, Encoder);
+    }
+
+    static MessageEncoderDecoderStruct generateDecoder(
+            final Ir ir,
+            final Token msgToken,
+            final List<Token> fields,
+            final List<Token> groups,
+            final List<Token> varData) {
+        return new MessageCodecGenerator().generate(fields, groups, varData, ir, msgToken, Decoder);
+    }
+
+    MessageEncoderDecoderStruct generate(
+            final List<Token> fields,
+            final List<Token> groups,
+            final List<Token> varData,
+            final Ir ir,
+            final Token msgToken,
+            final CodecType codecType
+    ) {
+        var messageEncoderDecoder = new MessageEncoderDecoderStruct();
 
         // i.e. <name>Decoder or <name>Encoder
         messageEncoderDecoder.msgTypeName = formatStructName(msgToken.name()) + codecType.name();
         messageEncoderDecoder.blockLengthType = rustTypeName(ir.headerStructure().blockLengthType());
         messageEncoderDecoder.schemaVersionType = rustTypeName(ir.headerStructure().schemaVersionType());
 
-        if (codecType == Decoder)
-        {
+        if (codecType == Decoder) {
             messageEncoderDecoder.fieldDecoders = RustGenerator.generateDecoderFields(fields);
             messageEncoderDecoder.groupDecoders = RustGenerator.generateDecoderGroups(groups, this);
             messageEncoderDecoder.varDataDecoders = RustGenerator.generateDecoderVarData(varData, false);
-        }
-        else
-        {
+        } else {
             messageEncoderDecoder.fieldEncoders = RustGenerator.generateEncoderFields(fields);
             messageEncoderDecoder.groupEncoders = RustGenerator.generateEncoderGroups(groups, this);
             messageEncoderDecoder.varDataEncoders = RustGenerator.generateEncoderVarData(varData);
@@ -90,32 +105,9 @@ class MessageCodecGenerator implements GroupContainer
         return messageEncoderDecoder;
     }
 
-    public GroupGenerator addInnerGroup(final String name, final Token groupToken)
-    {
+    public GroupGenerator addInnerGroup(final String name, final Token groupToken) {
         final GroupGenerator groupGenerator = new GroupGenerator(name, groupToken);
         groupGenerators.add(groupGenerator);
         return groupGenerator;
-    }
-
-    static EncoderDecoderStruct generateEncoder(
-        final Ir ir,
-        final Token msgToken,
-        final List<Token> fields,
-        final List<Token> groups,
-        final List<Token> varData)
-    {
-        final MessageCodecGenerator coderDef = new MessageCodecGenerator();
-        return coderDef.generate(fields, groups, varData, ir, msgToken, Encoder);
-    }
-
-    static EncoderDecoderStruct generateDecoder(
-        final Ir ir,
-        final Token msgToken,
-        final List<Token> fields,
-        final List<Token> groups,
-        final List<Token> varData)
-    {
-        final MessageCodecGenerator coderDef = new MessageCodecGenerator();
-        return coderDef.generate(fields, groups, varData, ir, msgToken, Decoder);
     }
 }

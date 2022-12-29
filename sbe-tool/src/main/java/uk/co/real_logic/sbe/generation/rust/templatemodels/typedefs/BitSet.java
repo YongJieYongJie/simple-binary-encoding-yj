@@ -1,4 +1,4 @@
-package uk.co.real_logic.sbe.generation.rust.templatemodels;
+package uk.co.real_logic.sbe.generation.rust.templatemodels.typedefs;
 
 import java.util.List;
 

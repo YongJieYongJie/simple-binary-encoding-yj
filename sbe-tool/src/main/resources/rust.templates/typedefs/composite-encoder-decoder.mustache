@@ -40,7 +40,7 @@ pub mod encoder {
         }
 
 {{#fieldEncoders}}
-        {{> encoder-fields}}
+        {{> ../encodingdecodingfns/field-encoders}}
 {{/fieldEncoders}}
     }
 } // end encoder mod 
@@ -74,7 +74,7 @@ pub mod decoder {
         }
 
 {{#fieldDecoders}}
-        {{> decoder-fields}}
+        {{> ../encodingdecodingfns/field-decoders}}
 {{/fieldDecoders}}
     }
 } // end decoder mod 

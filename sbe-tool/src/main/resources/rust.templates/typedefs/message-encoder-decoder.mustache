@@ -64,13 +64,13 @@ pub mod encoder {
         }
 
 {{#fieldEncoders}}
-        {{> encoder-fields}}
+        {{> ../encodingdecodingfns/field-encoders}}
 {{/fieldEncoders}}
 {{#groupEncoders}}
-        {{> encoder-group}}
+        {{> ../encodingdecodingfns/group-encoder}}
 {{/groupEncoders}}
 {{#varDataEncoders}}
-        {{> encoder-var-data}}
+        {{> ../encodingdecodingfns/vardata-encoder}}
 {{/varDataEncoders}}
     }
 
@@ -154,13 +154,13 @@ pub mod encoder {
         }
 
 {{#fieldEncoders}}
-        {{> encoder-fields}}
+        {{> ../encodingdecodingfns/field-encoders}}
 {{/fieldEncoders}}
 {{#groupEncoders}}
-        {{> encoder-group}}
+        {{> ../encodingdecodingfns/group-encoder}}
 {{/groupEncoders}}
 {{#varDataEncoders}}
-        {{> encoder-var-data}}
+        {{> ../encodingdecodingfns/vardata-encoder}}
 {{/varDataEncoders}}
     }
 
@@ -238,13 +238,13 @@ pub mod decoder {
         }
 
 {{#fieldDecoders}}
-        {{> decoder-fields}}
+        {{> ../encodingdecodingfns/field-decoders}}
 {{/fieldDecoders}}
 {{#groupDecoders}}
-        {{> decoder-group}}
+        {{> ../encodingdecodingfns/group-decoder}}
 {{/groupDecoders}}
 {{#varDataDecoders}}
-        {{> decoder-var-data}}
+        {{> ../encodingdecodingfns/vardata-decoder}}
 {{/varDataDecoders}}
     }
 
@@ -325,13 +325,13 @@ pub mod decoder {
         }
 
 {{#fieldDecoders}}
-        {{> decoder-fields}}
+        {{> ../encodingdecodingfns/field-decoders}}
 {{/fieldDecoders}}
 {{#groupDecoders}}
-        {{> decoder-group}}
+        {{> ../encodingdecodingfns/group-decoder}}
 {{/groupDecoders}}
 {{#varDataDecoders}}
-        {{> decoder-var-data}}
+        {{> ../encodingdecodingfns/vardata-decoder}}
 {{/varDataDecoders}}
     }
 
