@@ -185,6 +185,7 @@ subprojects {
 
     javadoc {
         failOnError false
+        excludes = ["**/rust/templatemodels/**/*"]
         title = '<h1>Simple Binary Encoding (SBE)</h1>'
         options.bottom = '<i>Copyright &#169; 2013-2022 Real Logic Limited. All Rights Reserved.</i>'
         options.encoding = 'UTF-8'
