@@ -4,13 +4,13 @@ import uk.co.real_logic.sbe.generation.rust.templatemodels.encodingdecodingfns.*
 
 import java.util.List;
 
-public class MessageEncoderDecoderStruct {
+public class MessageCodecStruct {
 
     public String msgTypeName;
     public List<FieldEncoder> fieldEncoders;
     public List<GroupEncoder> groupEncoders;
     public List<VarDataEncoder> varDataEncoders;
-    public List<GroupEncoderDecoderStruct> groupEncoderDecoders;
+    public List<GroupCodecStruct> groupCodecStructs;
     public List<FieldDecoder> fieldDecoders;
     public List<GroupDecoder> groupDecoders;
     public List<VarDataDecoder> varDataDecoders;

@@ -10,6 +10,6 @@ public class Message {
     public int schemaId;
     public String schemaVersionType;
     public int schemaVersion;
-    public MessageEncoderDecoderStruct encoderStruct;
-    public MessageEncoderDecoderStruct decoderStruct;
+    public MessageCodecStruct encoderStruct;
+    public MessageCodecStruct decoderStruct;
 }

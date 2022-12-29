@@ -109,17 +109,17 @@ public class RustGenerator implements CodeGenerator {
             bitSetTemplate.execute(fileWriter, bitSetStructDef).flush();
         }
 
-        List<Composite> compositeEncoderDecoders = generateComposites(ir);
+        List<Composite> compositeCodecs = generateComposites(ir);
         Mustache compositeTemplate = mf.compile(
-                "rust.templates/typedefs/composite-encoder-decoder.mustache");
-        for (final var compositeEncoderDecoder : compositeEncoderDecoders) {
-            Writer fileWriter = outputManager.createOutput(compositeEncoderDecoder.filename);
-            compositeTemplate.execute(fileWriter, compositeEncoderDecoder).flush();
+                "rust.templates/typedefs/composite-codec.mustache");
+        for (final var codec : compositeCodecs) {
+            Writer fileWriter = outputManager.createOutput(codec.filename);
+            compositeTemplate.execute(fileWriter, codec).flush();
         }
 
-        List<Message> messageEncoderDecoders = new ArrayList<>();
+        List<Message> messageCodecs = new ArrayList<>();
         for (final List<Token> tokens : ir.messages()) {
-            var messageEncoderDecoder = new Message();
+            var messageCodec = new Message();
             final Token msgToken = tokens.get(0);
             final String codecModName = codecModName(msgToken.name());
             final List<Token> messageBody = tokens.subList(1, tokens.size() - 1);
@@ -132,30 +132,30 @@ public class RustGenerator implements CodeGenerator {
             final List<Token> varData = new ArrayList<>();
             collectVarData(messageBody, i, varData);
 
-            messageEncoderDecoder.filename = codecModName;
-            messageEncoderDecoder.blockLengthType = blockLengthType();
-            messageEncoderDecoder.blockLength = msgToken.encodedLength();
-            messageEncoderDecoder.templateIdType = rustTypeName(ir.headerStructure().templateIdType());
-            messageEncoderDecoder.templateId = msgToken.id();
-            messageEncoderDecoder.schemaIdType = rustTypeName(ir.headerStructure().schemaIdType());
-            messageEncoderDecoder.schemaId = ir.id();
-            messageEncoderDecoder.schemaVersionType = schemaVersionType();
-            messageEncoderDecoder.schemaVersion = ir.version();
+            messageCodec.filename = codecModName;
+            messageCodec.blockLengthType = blockLengthType();
+            messageCodec.blockLength = msgToken.encodedLength();
+            messageCodec.templateIdType = rustTypeName(ir.headerStructure().templateIdType());
+            messageCodec.templateId = msgToken.id();
+            messageCodec.schemaIdType = rustTypeName(ir.headerStructure().schemaIdType());
+            messageCodec.schemaId = ir.id();
+            messageCodec.schemaVersionType = schemaVersionType();
+            messageCodec.schemaVersion = ir.version();
 
-            messageEncoderDecoder.encoderStruct = MessageCodecGenerator.generateEncoder(ir, msgToken, fields, groups, varData);
-            messageEncoderDecoder.decoderStruct = MessageCodecGenerator.generateDecoder(ir, msgToken, fields, groups, varData);
+            messageCodec.encoderStruct = MessageCodecGenerator.generateEncoder(ir, msgToken, fields, groups, varData);
+            messageCodec.decoderStruct = MessageCodecGenerator.generateDecoder(ir, msgToken, fields, groups, varData);
 
-            messageEncoderDecoders.add(messageEncoderDecoder);
+            messageCodecs.add(messageCodec);
         }
         var mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         mapper.setSerializationInclusion(Include.NON_NULL);
 
         Mustache messageTemplate = mf.compile(
-                "rust.templates/typedefs/message-encoder-decoder.mustache");
-        for (final var messageEncoderDecoder : messageEncoderDecoders) {
-            Writer fileWriter = outputManager.createOutput(messageEncoderDecoder.filename);
-            messageTemplate.execute(fileWriter, messageEncoderDecoder).flush();
+                "rust.templates/typedefs/message-codec.mustache");
+        for (final var codec : messageCodecs) {
+            Writer fileWriter = outputManager.createOutput(codec.filename);
+            messageTemplate.execute(fileWriter, codec).flush();
         }
 
         // lib.rs
@@ -217,7 +217,7 @@ public class RustGenerator implements CodeGenerator {
             e.groupTypeName = groupName;
             e.groupName = toLowerSnakeCase(groupName);
 
-            final GroupGenerator groupGenerator = parentElement.addInnerGroup(groupName, groupToken);
+            final GroupGenerator groupGenerator = parentElement.addSubGroup(groupName, groupToken);
             groupGenerator.generateEncoder(tokens, fields, groups, varData, index);
 
             groupEncoders.add(e);
@@ -541,7 +541,7 @@ public class RustGenerator implements CodeGenerator {
             final String groupName = decoderName(formatStructName(groupToken.name()));
             assert 4 == groupHeaderTokenCount;
 
-            final GroupGenerator groupGenerator = parentElement.addInnerGroup(groupName, groupToken);
+            final GroupGenerator groupGenerator = parentElement.addSubGroup(groupName, groupToken);
             groupGenerator.generateDecoder(tokens, fields, groups, varData, index);
 
             var groupDecoder = new GroupDecoder();
@@ -673,17 +673,17 @@ public class RustGenerator implements CodeGenerator {
     }
 
     private static Composite generateComposite(final List<Token> tokens) {
-        var compositeEncoderDecoder = new Composite();
+        var compositeCodec = new Composite();
         final String compositeName = tokens.get(0).applicableTypeName();
 
-        compositeEncoderDecoder.filename = codecModName(compositeName);
-        compositeEncoderDecoder.encodedLength = tokens.get(0).encodedLength();
-        compositeEncoderDecoder.encodedLengthGreaterThanZero = compositeEncoderDecoder.encodedLength > 0;
-        compositeEncoderDecoder.encoderName = encoderName(compositeName);
-        compositeEncoderDecoder.fieldEncoders = generateCompositeFieldsEncoder(tokens);
-        compositeEncoderDecoder.decoderName = decoderName(compositeName);
-        compositeEncoderDecoder.fieldDecoders = generateCompositeFieldsDecoder(tokens);
-        return compositeEncoderDecoder;
+        compositeCodec.filename = codecModName(compositeName);
+        compositeCodec.encodedLength = tokens.get(0).encodedLength();
+        compositeCodec.encodedLengthGreaterThanZero = compositeCodec.encodedLength > 0;
+        compositeCodec.encoderName = encoderName(compositeName);
+        compositeCodec.fieldEncoders = generateCompositeFieldsEncoder(tokens);
+        compositeCodec.decoderName = decoderName(compositeName);
+        compositeCodec.fieldDecoders = generateCompositeFieldsDecoder(tokens);
+        return compositeCodec;
     }
 
     private static List<FieldEncoder> generateCompositeFieldsEncoder(final List<Token> tokens) {
@@ -765,10 +765,10 @@ public class RustGenerator implements CodeGenerator {
     /**
      * Generator classes for SBE types that can contain inner groups (i.e. message and group) must
      * implement this interface. Code for such inner groups need to be generated after the other
-     * fields in the main SBE type is generated, so we use the `addInnerGroup` method on this
+     * fields in the main SBE type is generated, so we use the `addSubGroup` method on this
      * interface to add the inner groups first, and generate later.
      */
     interface GroupContainer {
-        GroupGenerator addInnerGroup(String name, Token groupToken);
+        GroupGenerator addSubGroup(String name, Token groupToken);
     }
 }

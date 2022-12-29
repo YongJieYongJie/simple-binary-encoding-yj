@@ -4,7 +4,7 @@ import uk.co.real_logic.sbe.generation.rust.templatemodels.encodingdecodingfns.*
 
 import java.util.List;
 
-public class GroupEncoderDecoderStruct {
+public class GroupCodecStruct {
     public String numInGroupPrimitiveType;
     public String name;
     public int dimensionHeaderSize;

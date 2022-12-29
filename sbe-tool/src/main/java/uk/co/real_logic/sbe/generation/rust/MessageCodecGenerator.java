@@ -17,8 +17,8 @@ package uk.co.real_logic.sbe.generation.rust;
 
 import uk.co.real_logic.sbe.generation.rust.RustGenerator.CodecType;
 import uk.co.real_logic.sbe.generation.rust.RustGenerator.GroupContainer;
-import uk.co.real_logic.sbe.generation.rust.templatemodels.typedefs.GroupEncoderDecoderStruct;
-import uk.co.real_logic.sbe.generation.rust.templatemodels.typedefs.MessageEncoderDecoderStruct;
+import uk.co.real_logic.sbe.generation.rust.templatemodels.typedefs.GroupCodecStruct;
+import uk.co.real_logic.sbe.generation.rust.templatemodels.typedefs.MessageCodecStruct;
 import uk.co.real_logic.sbe.ir.Ir;
 import uk.co.real_logic.sbe.ir.Token;
 
@@ -39,7 +39,7 @@ class MessageCodecGenerator implements GroupContainer {
     MessageCodecGenerator() {
     }
 
-    static MessageEncoderDecoderStruct generateEncoder(
+    static MessageCodecStruct generateEncoder(
             final Ir ir,
             final Token msgToken,
             final List<Token> fields,
@@ -48,7 +48,7 @@ class MessageCodecGenerator implements GroupContainer {
         return new MessageCodecGenerator().generate(fields, groups, varData, ir, msgToken, Encoder);
     }
 
-    static MessageEncoderDecoderStruct generateDecoder(
+    static MessageCodecStruct generateDecoder(
             final Ir ir,
             final Token msgToken,
             final List<Token> fields,
@@ -57,7 +57,7 @@ class MessageCodecGenerator implements GroupContainer {
         return new MessageCodecGenerator().generate(fields, groups, varData, ir, msgToken, Decoder);
     }
 
-    MessageEncoderDecoderStruct generate(
+    MessageCodecStruct generate(
             final List<Token> fields,
             final List<Token> groups,
             final List<Token> varData,
@@ -65,24 +65,24 @@ class MessageCodecGenerator implements GroupContainer {
             final Token msgToken,
             final CodecType codecType
     ) {
-        var messageEncoderDecoder = new MessageEncoderDecoderStruct();
+        var messageCodec = new MessageCodecStruct();
 
         // i.e. <name>Decoder or <name>Encoder
-        messageEncoderDecoder.msgTypeName = formatStructName(msgToken.name()) + codecType.name();
-        messageEncoderDecoder.blockLengthType = rustTypeName(ir.headerStructure().blockLengthType());
-        messageEncoderDecoder.schemaVersionType = rustTypeName(ir.headerStructure().schemaVersionType());
+        messageCodec.msgTypeName = formatStructName(msgToken.name()) + codecType.name();
+        messageCodec.blockLengthType = rustTypeName(ir.headerStructure().blockLengthType());
+        messageCodec.schemaVersionType = rustTypeName(ir.headerStructure().schemaVersionType());
 
         if (codecType == Decoder) {
-            messageEncoderDecoder.fieldDecoders = RustGenerator.generateDecoderFields(fields);
-            messageEncoderDecoder.groupDecoders = RustGenerator.generateDecoderGroups(groups, this);
-            messageEncoderDecoder.varDataDecoders = RustGenerator.generateDecoderVarData(varData, false);
+            messageCodec.fieldDecoders = RustGenerator.generateDecoderFields(fields);
+            messageCodec.groupDecoders = RustGenerator.generateDecoderGroups(groups, this);
+            messageCodec.varDataDecoders = RustGenerator.generateDecoderVarData(varData, false);
         } else {
-            messageEncoderDecoder.fieldEncoders = RustGenerator.generateEncoderFields(fields);
-            messageEncoderDecoder.groupEncoders = RustGenerator.generateEncoderGroups(groups, this);
-            messageEncoderDecoder.varDataEncoders = RustGenerator.generateEncoderVarData(varData);
+            messageCodec.fieldEncoders = RustGenerator.generateEncoderFields(fields);
+            messageCodec.groupEncoders = RustGenerator.generateEncoderGroups(groups, this);
+            messageCodec.varDataEncoders = RustGenerator.generateEncoderVarData(varData);
         }
 
-        List<GroupEncoderDecoderStruct> innerGroups = new ArrayList<>();
+        List<GroupCodecStruct> subGroups = new ArrayList<>();
 
         // Unwrap subgroups in a breadth-first manner (i.e., groups that are generated directly by the
         // message will be processed first, followed by any subgroups these initial groups generates.
@@ -90,22 +90,22 @@ class MessageCodecGenerator implements GroupContainer {
         Set<String> alreadyAdded = new HashSet<>();
         while (!groupGenerators.isEmpty()) {
             for (GroupGenerator groupGenerator : groupGenerators) {
-                if (!groupGenerator.hasInnerGroup()) continue;
-                if (alreadyAdded.contains(groupGenerator.innerGroup.name)) continue;
-                alreadyAdded.add(groupGenerator.innerGroup.name);
-                innerGroups.add(groupGenerator.innerGroup);
+                if (!groupGenerator.hasSubGroup()) continue;
+                if (alreadyAdded.contains(groupGenerator.subGroup.name)) continue;
+                alreadyAdded.add(groupGenerator.subGroup.name);
+                subGroups.add(groupGenerator.subGroup);
                 nextGroupGenerators.addAll(groupGenerator.groupGenerators);
             }
             groupGenerators.clear();
             groupGenerators.addAll(nextGroupGenerators);
             nextGroupGenerators.clear();
         }
-        messageEncoderDecoder.groupEncoderDecoders = innerGroups;
+        messageCodec.groupCodecStructs = subGroups;
 
-        return messageEncoderDecoder;
+        return messageCodec;
     }
 
-    public GroupGenerator addInnerGroup(final String name, final Token groupToken) {
+    public GroupGenerator addSubGroup(final String name, final Token groupToken) {
         final GroupGenerator groupGenerator = new GroupGenerator(name, groupToken);
         groupGenerators.add(groupGenerator);
         return groupGenerator;
