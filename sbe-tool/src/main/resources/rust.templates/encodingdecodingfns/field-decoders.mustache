@@ -1,0 +1,125 @@
+{{#requiredPrimitiveDecoder}}
+/// primitive field - 'REQUIRED'
+{{#characterEncoding}}/// characterEncoding: '{{characterEncoding}}'{{/characterEncoding}}
+#[inline]
+pub fn {{functionName}}(&self) -> {{rustPrimitiveType}} {
+    {{#versionAboveZero}}
+    if self.acting_version < {{version}} {
+        return {{rustLiteral}};
+    }
+
+    {{/versionAboveZero}}
+    self.get_buf().get_{{rustPrimitiveType}}_at(self.offset + {{offset}})
+}
+
+{{/requiredPrimitiveDecoder}}
+{{#optionalPrimitiveDecoder}}
+/// primitive field - 'OPTIONAL' { null_value: '{{applicableNullValue}}' }
+{{#characterEncoding}}/// characterEncoding: '{{characterEncoding}}'{{/characterEncoding}}
+#[inline]
+pub fn {{functionName}}(&self) -> Option<{{rustPrimitiveType}}> {
+    {{#versionAboveZero}}
+    if self.acting_version < {{version}} {
+        return None;
+    }
+
+    {{/versionAboveZero}}
+    let value = self.get_buf().get_{{rustPrimitiveType}}_at(self.offset + {{offset}});
+    {{#isNAN}}
+    if value.is_nan() {
+    {{/isNAN}}
+    {{^isNAN}}
+    if value == {{literal}} {
+    {{/isNAN}}
+        None
+    } else {
+        Some(value)
+    }
+}
+
+{{/optionalPrimitiveDecoder}}
+{{#constantPrimitiveDecoder}}
+/// CONSTANT 
+{{#characterEncoding}}/// characterEncoding: '{{characterEncoding}}'{{/characterEncoding}}
+#[inline]
+pub fn {{functionName}}(&self) -> {{&returnValue}} {
+    {{&rawConstValue}}
+}
+
+{{/constantPrimitiveDecoder}}
+{{#arrayPrimitiveDecoder}}
+#[inline]
+pub fn {{functionName}}(&self) -> [{{rustPrimitiveType}}; {{arrayLength}}] {
+    {{#versionAboveZero}}
+    if self.acting_version < {{version}} {
+        return [{{applicableNullValue}}, arrayLength];
+    }
+
+    {{/versionAboveZero}}
+    let buf = self.get_buf();
+    [
+    {{#arrayItems}}
+        buf.get_{{rustPrimitiveType}}_at(self.offset + {{baseOffset}} + {{itemOffset}}),
+    {{/arrayItems}}
+    ]
+}
+
+{{/arrayPrimitiveDecoder}}
+{{#enumDecoder}}
+/// REQUIRED enum
+#[inline]
+pub fn {{functionName}}(&self) -> {{enumTypeName}} {
+    {{#versionAboveZero}}
+    if self.acting_version < {{version}} {
+        return {{enumTypeName}}::default();
+    }
+
+    {{/versionAboveZero}}
+    self.get_buf().get_{{rustPrimitiveType}}_at(self.offset + {{offset}}).into()
+}
+
+{{/enumDecoder}}
+{{#constantEnumDecoder}}
+/// CONSTANT enum
+#[inline]
+pub fn {{functionName}}(&self) -> {{enumTypeName}} {
+    {{enumTypeName}}::{{constValueName}}
+}
+
+{{/constantEnumDecoder}}
+{{#bitSetDecoder}}
+/// bitset field
+#[inline]
+pub fn {{functionName}}(&self) -> {{bitSetTypeName}} {
+    {{#versionAboveZero}}
+    if self.acting_version < {{version}} {
+        return {{bitSetTypeName}}::default();
+    }
+
+    {{/versionAboveZero}}
+    {{bitSetTypeName}}::new(self.get_buf().get_{{rustPrimitiveType}}_at(self.offset + {{offset}}))
+}
+
+{{/bitSetDecoder}}
+{{#compositeDecoder}}
+/// COMPOSITE DECODER
+#[inline]
+{{#versionAboveZero}}
+pub fn {{functionName}}(self) -> Either<Self, {{decoderTypeName}}<Self>> {
+    if self.acting_version < {{version}} {
+        return Either::Left(self);
+    }
+
+    let offset = self.offset + {{offset}};
+    Either::Right({{decoderTypeName}}::default().wrap(self, offset));
+}
+
+{{/versionAboveZero}}
+{{^versionAboveZero}}
+pub fn {{functionName}}(self) -> {{decoderTypeName}}<Self> {
+    let offset = self.offset + {{offset}};
+    {{decoderTypeName}}::default().wrap(self, offset)
+}
+
+{{/versionAboveZero}}
+{{/compositeDecoder}}

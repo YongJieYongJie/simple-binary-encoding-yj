@@ -1,0 +1,48 @@
+#[derive(Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct {{bitSetType}}(pub {{rustPrimitiveType}});
+
+impl {{bitSetType}} {
+    #[inline]
+    pub fn new(value: {{rustPrimitiveType}}) -> Self {
+        {{bitSetType}}(value)
+    }
+
+    #[inline]
+    pub fn clear(&mut self) -> &mut Self {
+        self.0 = 0;
+        self
+    }
+
+{{#choices}}
+    #[inline]
+    pub fn get_{{choiceName}}(&self) -> bool {
+        0 != self.0 & (1 << {{choiceBitIndex}})
+    }
+
+    #[inline]
+    pub fn set_{{choiceName}}(&mut self, value: bool) -> &mut Self {
+        self.0 = if value {
+            self.0 | (1 << {{choiceBitIndex}})
+        } else {
+            self.0 & !(1 << {{choiceBitIndex}})
+        };
+        self
+    }
+{{/choices}}
+}
+
+impl core::fmt::Debug for {{bitSetType}} {
+    #[inline]
+    fn fmt(&self, fmt: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(fmt, "{{bitSetType}}[\
+            {{#choices}}
+{{choiceName}}({{choiceBitIndex}})={}{{^isLast}},{{/isLast}}\
+            {{/choices}}
+]",
+            {{#choices}}
+            self.get_{{choiceName}}(){{^isLast}},{{/isLast}}
+            {{/choices}}
+        )
+    }
+}
+

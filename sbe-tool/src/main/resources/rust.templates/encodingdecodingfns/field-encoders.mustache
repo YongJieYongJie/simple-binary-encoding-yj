@@ -1,0 +1,70 @@
+{{#primitiveEncoder}}
+/// primitive field '{{fieldName}}'
+/// - min value: {{applicableMinValue}}
+/// - max value: {{applicableMaxValue}}
+/// - null value: {{applicableNullValue}}
+/// - characterEncoding: {{characterEncoding}}{{^characterEncoding}}null{{/characterEncoding}}
+/// - semanticType: {{semanticType}}{{^semanticType}}null{{/semanticType}}
+/// - encodedOffset: {{offset}}
+/// - encodedLength: {{encodedLength}}
+#[inline]
+pub fn {{functionName}}(&mut self, value: {{rustPrimitiveType}}) {
+    let offset = self.offset + {{offset}};
+    self.get_buf_mut().put_{{rustPrimitiveType}}_at(offset, value);
+}
+
+{{/primitiveEncoder}}
+{{#constantPrimitiveEncoder}}
+// skipping CONSTANT {{fieldName}}
+
+{{/constantPrimitiveEncoder}}
+{{#arrayPrimitiveEncoder}}
+/// primitive array field '{{fieldName}}'
+/// - min value: {{applicableMinValue}}
+/// - max value: {{applicableMaxValue}}
+/// - null value: {{applicableNullValue}}
+/// - characterEncoding: {{characterEncoding}}{{^characterEncoding}}null{{/characterEncoding}}
+/// - semanticType: {{semanticType}}{{^semanticType}}null{{/semanticType}}
+/// - encodedOffset: {{offset}}
+/// - encodedLength: {{encodedLength}}
+/// - version: {{version}}
+#[inline]
+pub fn {{functionName}}(&mut self, value: [{{rustPrimitiveType}}; {{arrayLength}}]) {
+    let offset = self.offset + {{offset}};
+    let buf = self.get_buf_mut();
+{{#arrayItems}}
+    buf.put_{{rustPrimitiveType}}_at(offset + {{itemOffset}}, value[{{itemIndex}}]);
+{{/arrayItems}}
+}
+
+{{/arrayPrimitiveEncoder}}
+{{#enumEncoder}}
+/// REQUIRED enum
+#[inline]
+pub fn {{functionName}}(&mut self, value: {{enumTypeName}}) {
+    let offset = self.offset + {{offset}};
+    self.get_buf_mut().put_{{rustPrimitiveType}}_at(offset, value as {{rustPrimitiveType}})
+}
+
+{{/enumEncoder}}
+{{#constantEnumEncoder}}
+// skipping CONSTANT enum '{{fieldName}}'
+
+{{/constantEnumEncoder}}
+{{#bitSetEncoder}}
+#[inline]
+pub fn {{functionName}}(&mut self, value: {{bitSetTypeName}}) {
+    let offset = self.offset + {{offset}};
+    self.get_buf_mut().put_{{rustPrimitiveType}}_at(offset, value.0)
+}
+
+{{/bitSetEncoder}}
+{{#compositeEncoder}}
+/// COMPOSITE ENCODER
+#[inline]
+pub fn {{encoderFunctionName}}(self) -> {{encoderTypeName}}<Self> {
+    let offset = self.offset + {{offset}};
+    {{encoderTypeName}}::default().wrap(self, offset)
+}
+
+{{/compositeEncoder}}

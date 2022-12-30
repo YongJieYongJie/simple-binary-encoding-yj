@@ -1,0 +1,10 @@
+/// VAR_DATA ENCODER - character encoding: '{{characterEncoding}}'
+#[inline]
+pub fn {{propertyName}}(&mut self, value: {{&varDataType}}) {
+    let limit = self.get_limit();
+    let data_length = value.len();
+    self.set_limit(limit + {{lengthTypeSize}} + data_length);
+    self.get_buf_mut().put_{{lengthType}}_at(limit, data_length as {{lengthType}});
+    self.get_buf_mut().put_slice_at(limit + {{lengthTypeSize}}, value{{toBytesFn}});
+}
+

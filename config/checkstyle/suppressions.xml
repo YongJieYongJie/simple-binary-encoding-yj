@@ -7,4 +7,5 @@
     <suppress files=".*generated.*" checks="."/>
     <suppress files="[\\/]test[\\/]" checks="MissingJavadoc.*"/>
     <suppress files="[\\/]sbe-benchmarks[\\/]" checks="MissingJavadoc.*"/>
+    <suppress files=".*[\\/]rust[\\/]templatemodels[\\/].*" checks="MissingJavadoc.*"/>
 </suppressions>

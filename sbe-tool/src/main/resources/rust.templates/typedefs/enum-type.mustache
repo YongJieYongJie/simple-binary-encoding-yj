@@ -1,0 +1,24 @@
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[repr({{primitiveType}})]
+pub enum {{enumRustName}} {
+{{#enumItems}}
+    {{name}} = {{literal}},
+{{/enumItems}}
+}
+
+impl Default for {{enumRustName}} {
+    #[inline]
+    fn default() -> Self { {{enumRustName}}::NullVal }
+}
+
+impl From<{{primitiveType}}> for {{enumRustName}} {
+    #[inline]
+    fn from(v: {{primitiveType}}) -> Self {
+        match v {
+        {{#enumFromItems}}
+            {{literal}} => Self::{{name}},
+        {{/enumFromItems}}
+        }
+    }
+}
+
