@@ -20,6 +20,24 @@
 
 2. Generally refactor Java code for generating Rust output.
 
+## Usage
+
+1. Download the latest jar file from GitHub releases.
+2. Generate the Rust codec the same way as the upstream sbe-tool, for example:
+    ```shell
+    pathToDownloadedJarFile="path/to/downloaded/jar/file/sbe-all-yj-1.27.0.jar"
+    pathToSchemaFile="./sbe-samples/src/main/resources/example-schema.xml"
+
+    java -Dsbe.xinclude.aware=true \
+        -Dsbe.generate.ir=true \
+        -Dsbe.target.language=Rust \
+        -Dsbe.target.namespace=sbe \
+        -Dsbe.output.dir=generated/rust \
+        -Dsbe.errorLog=yes \
+        -jar "$pathToDownloadedJarFile" \
+        "pathToSchemaFile"
+    ```
+
 ## More information
 
 See upstream for main documentation: https://github.com/real-logic/simple-binary-encoding.

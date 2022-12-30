@@ -68,7 +68,7 @@ ext {
 }
 
 def projectPom = {
-    name = 'sbe'
+    name = 'sbe-yj'
     description = 'FIX/SBE - OSI layer 6 presentation for encoding and decoding application messages' +
         ' in binary format for low-latency applications.'
     url = 'https://github.com/real-logic/simple-binary-encoding'
@@ -344,6 +344,7 @@ project(':sbe-all') {
             'Implementation-Vendor': 'Real Logic Limited',
             'Automatic-Module-Name': 'uk.co.real_logic.sbe.all'
         )
+        baseName 'sbe-all-yj'
     }
 
     jar.finalizedBy shadowJar
